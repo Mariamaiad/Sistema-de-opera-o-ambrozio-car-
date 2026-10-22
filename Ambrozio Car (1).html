@@ -1,0 +1,763 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ambrozio Car</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Exo+2:ital,wght@1,800;1,900&display=swap" rel="stylesheet">
+<style>
+/* Layout: barra superior com faixa de velocidade, menu lateral e área principal. Uma ordem de serviço por carro, com 4 etapas em sequência (funilaria, preparação, pintura, polimento). */
+:root{
+  --bg:#09090b; --surface:#131316; --surface2:#1b1b20; --line:#2a2a30;
+  --fg:#eceef1; --muted:#9a9ea8; --red:#e5222b; --red-dim:#2d1013; --silver:#cfd2d8;
+  --fun:#5aa2ff; --prep:#ff7ab6; --pin:#b48cff; --mont:#d7e35a; --pol:#2ed3c6;
+  --amber:#f5a524; --pause:#ff8a4c; --green:#4ade80;
+  --display:'Exo 2','Arial Black',system-ui,sans-serif;
+  --body:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--silver);outline-offset:2px}
+h1,h2,h3{margin:0;text-wrap:balance}
+.num{font-variant-numeric:tabular-nums}
+
+/* marca */
+.wm{display:inline-flex;flex-direction:column;align-items:flex-end;line-height:.9}
+.wm-a{font-family:var(--display);font-style:italic;font-weight:900;font-size:26px;letter-spacing:.02em;
+  background:linear-gradient(180deg,#fff 20%,#aeb1b8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.wm-b{font-family:var(--display);font-style:italic;font-weight:800;font-size:15px;letter-spacing:.08em;color:var(--silver)}
+.wm.big .wm-a{font-size:clamp(40px,8vw,64px)}.wm.big .wm-b{font-size:clamp(22px,4vw,32px)}
+.speed{display:flex;gap:8px;align-items:center;height:6px}
+.speed i{display:block;height:4px;width:46%;background:var(--red);transform:skewX(-35deg)}
+.speed b{display:block;flex:1;height:4px;background:repeating-linear-gradient(90deg,var(--silver) 0 2px,transparent 2px 6px);
+  -webkit-mask-image:linear-gradient(90deg,#000,transparent);mask-image:linear-gradient(90deg,#000,transparent)}
+
+/* topo */
+.top{display:flex;align-items:center;gap:16px;padding-block:14px;flex-wrap:wrap}
+.top .date{color:var(--muted);font-size:13px;margin-right:auto;text-transform:capitalize}
+.who{display:flex;align-items:center;gap:10px}
+.who small{display:block;color:var(--muted);font-size:12px;line-height:1.1}
+.who strong{display:block;line-height:1.2}
+.btn{border:1px solid var(--line);background:var(--surface2);border-radius:6px;padding:8px 14px;font-weight:600;transition:border-color .15s,background .15s}
+.btn:hover{border-color:var(--silver)}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.btn.red:hover{background:#f03a42;border-color:#f03a42}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.ghost{background:transparent}
+.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;
+  background:var(--surface2);border:2px solid var(--c,var(--silver));flex:none}
+.bell{position:relative;padding:6px 10px}
+.bell svg{width:20px;height:20px;display:block}
+.badge{position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+
+/* app */
+.app{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;padding-block:20px 48px;align-items:start}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;align-items:center;gap:10px;text-align:left;background:transparent;border:0;border-left:3px solid transparent;
+  padding:10px 12px;border-radius:0 6px 6px 0;color:var(--muted);font-weight:600}
+.nav button:hover{background:var(--surface);color:var(--fg)}
+.nav button[aria-current="page"]{background:var(--surface);color:var(--fg);border-left-color:var(--red)}
+.nav svg{width:18px;height:18px;flex:none}
+main{min-width:0}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.pagehead h1{font-family:var(--display);font-style:italic;font-weight:800;font-size:28px;letter-spacing:.01em}
+.pagehead p{margin:2px 0 0;color:var(--muted)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.stat span{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.07em}
+.stat strong{display:block;font-family:var(--display);font-style:italic;font-weight:800;font-size:28px;line-height:1.15}
+.stat small{color:var(--muted)}
+.stat.alert{border-color:#5b1b20;background:var(--red-dim)}
+
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.bar .grow{flex:1}
+.tab{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 14px;font-weight:600;color:var(--muted)}
+.tab[aria-pressed="true"]{background:var(--fg);color:#0a0a0b;border-color:var(--fg)}
+
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.s-fazer,.p-aguardando{color:var(--muted)}
+.s-andamento,.p-servico{color:var(--amber)}
+.s-pausada{color:var(--pause)}
+.s-feita,.p-pronto,.ok{color:var(--green)}
+.p-entregue{color:var(--silver)}
+.warn{color:var(--amber)}.crit{color:#ff5b62}
+
+/* cartões da agenda */
+.sechead{display:flex;align-items:center;gap:8px;font-family:var(--display);font-style:italic;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:14px;margin:22px 0 10px}
+.sechead::before{content:"";width:22px;height:4px;background:var(--c);transform:skewX(-35deg)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.empcard{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--c);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.empcard header{display:flex;align-items:center;gap:10px}
+.empcard header small{display:block;color:var(--muted);font-size:12px}
+.item{text-align:left;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:9px 10px;display:flex;flex-direction:column;gap:4px;width:100%;min-width:0}
+.item:hover{border-color:var(--silver)}
+.item.dim{opacity:.65}
+.l1{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.l2{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.l3{color:var(--muted);font-size:12px}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:14px;color:var(--muted)}
+
+/* minha agenda */
+.mylist{display:flex;flex-direction:column;gap:10px}
+.myjob{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;background:var(--surface);
+  border:1px solid var(--line);border-left:4px solid var(--c);border-radius:10px;padding:12px 14px}
+.myjob .l1 b{font-size:17px}
+.myjob ul{margin:4px 0 0;padding-left:18px;color:var(--silver);font-size:14px}
+.myjob .hint{color:var(--muted);font-size:12px;margin-top:4px}
+h2.sec{font-family:var(--display);font-style:italic;font-weight:800;font-size:18px;margin:22px 0 10px;display:flex;gap:10px;align-items:center}
+h2.sec small{font-family:var(--body);font-style:normal;font-weight:500;color:var(--muted);font-size:13px}
+
+/* lista de OS */
+.oslist{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.oscard{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px;width:100%;min-width:0}
+.oscard:hover{border-color:var(--silver)}
+.oscard .sub{color:var(--muted);font-size:13px}
+.stepper{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.step{border-top:4px solid var(--line);padding-top:6px;min-width:0}
+.step span{display:block;font-weight:700;font-size:13px}
+.step small{display:block;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.step.t-feita{border-top-color:var(--green)}.step.t-andamento{border-top-color:var(--amber)}.step.t-pausada{border-top-color:var(--pause)}
+
+/* detalhe da OS */
+.oshead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.oshead p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.subh{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin:4px 0 0}
+.stagebox{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--surface2)}
+.stagebox.mine{box-shadow:0 0 0 1px var(--c)}
+.stagebox header{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.stagebox header h3{font-family:var(--display);font-style:italic;font-weight:800;font-size:17px}
+.stagebox .resp{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.stagebox .resp select{width:auto;padding:5px 8px}
+.tasks{display:flex;flex-direction:column;gap:6px}
+label.task{flex-direction:row;align-items:center;gap:10px;color:var(--fg);font-size:15px;font-weight:500}
+.task input{width:20px;height:20px;accent-color:var(--red);flex:none;padding:0}
+.task.done span{color:var(--muted);text-decoration:line-through}
+.task.miss span{color:#ff8a8f}
+.log{list-style:none;margin:0;padding:0;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.log b{color:var(--silver);font-weight:600}
+.worked{font-size:13px;color:var(--silver)}
+.addtask{display:flex;gap:8px}
+.banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--surface2)}
+.banner.crit{border-color:#5b1b20;background:var(--red-dim)}
+.actionbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid var(--red);border-radius:10px;padding:12px;background:var(--red-dim)}
+.actionbar small{display:block;color:var(--muted)}
+.actionbar .act{display:flex;gap:10px;flex-wrap:wrap}
+
+/* fotos */
+.thumbs{display:flex;flex-wrap:wrap;gap:8px}
+.thumb{position:relative;width:96px;height:72px;border-radius:6px;overflow:hidden;border:1px solid var(--line);padding:0;background:var(--bg);display:block}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .rm{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.78);color:#fff;line-height:1;padding:0}
+figure.fig{margin:0;width:116px}
+.fig .thumb{width:116px;height:86px}
+figcaption{font-size:12px;color:var(--muted);margin-top:3px}
+.photos{display:flex;flex-direction:column;gap:8px}
+.addphoto{flex-direction:row;position:relative;gap:8px;align-items:center}
+.addphoto input{position:absolute;opacity:0;width:1px;height:1px;padding:0}
+.addphoto:focus-within .btn{outline:2px solid var(--silver);outline-offset:2px}
+.lb{margin:0;max-width:min(900px,100%);display:flex;flex-direction:column;gap:8px;align-items:center}
+.lb img{max-width:100%;max-height:78vh;border-radius:8px;background:var(--surface)}
+.lb figcaption{color:var(--silver);font-size:14px}
+
+/* notificações */
+.notifs{display:flex;flex-direction:column;gap:6px}
+.notif{text-align:left;display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:start;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+.notif.new{border-color:var(--red)}
+.notif i{width:9px;height:9px;border-radius:50%;margin-top:6px;background:var(--muted)}
+.notif .k-open{background:var(--amber)}.notif .k-pause{background:var(--pause)}.notif .k-done{background:var(--green)}.notif .k-problem{background:#ff5b62}
+.notif small{color:var(--muted);white-space:nowrap}
+
+/* tabelas */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:left;padding:10px 12px;background:var(--surface2);font-weight:600}
+td{padding:11px 12px;border-top:1px solid var(--line);vertical-align:middle}
+td.r,th.r{text-align:right}
+td small{display:block;color:var(--muted)}
+td .btns{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.plate{font-family:ui-monospace,'SFMono-Regular',Menlo,monospace;background:#fff;color:#111;border-radius:4px;padding:1px 7px;font-weight:700;font-size:13px;border-bottom:3px solid #1f4fb5;white-space:nowrap}
+
+/* estoque */
+.qty{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.qty button{width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:var(--surface2);line-height:1;font-weight:700}
+.qty button:hover{border-color:var(--silver)}
+.qty strong{min-width:46px;text-align:center}
+.meter{height:6px;border-radius:3px;background:var(--line);overflow:hidden;min-width:90px}
+.meter i{display:block;height:100%;background:var(--green)}
+.meter.warn i{background:var(--amber)}.meter.crit i{background:#ff5b62}
+
+/* financeiro */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.panel h3{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;font-weight:600}
+.hbar{display:grid;grid-template-columns:90px minmax(0,1fr) 96px;gap:10px;align-items:center;margin-bottom:12px}
+.hbar .track{height:18px;background:var(--surface2);border-radius:4px;display:flex;overflow:hidden}
+.hbar .paid{background:var(--c)}
+.hbar .pend{background:repeating-linear-gradient(135deg,var(--c) 0 3px,transparent 3px 7px);opacity:.55}
+.hbar strong{text-align:right}
+.key{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px}
+.key i{display:inline-block;width:12px;height:10px;margin-right:5px;background:var(--silver)}
+.key i.h{background:repeating-linear-gradient(135deg,var(--silver) 0 2px,transparent 2px 5px)}
+.in{color:var(--green)}.out{color:#ff8a8f}
+
+/* login */
+.login{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;align-items:center;padding-block:32px}
+.hero{display:flex;flex-direction:column;gap:24px}
+.hero p{color:var(--muted);max-width:42ch;font-size:17px;margin:0}
+.hero .speed{max-width:420px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.card h2{font-family:var(--display);font-style:italic;font-weight:800;font-size:22px}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);font-weight:600}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 11px;color:var(--fg);width:100%;min-width:0}
+input:focus,select:focus,textarea:focus{border-color:var(--silver);outline:none}
+.err{color:#ff8a8f;font-size:14px;min-height:20px;margin:0}
+.demo{display:flex;flex-wrap:wrap;gap:8px}
+.demo button{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:13px;display:flex;gap:6px;align-items:center}
+.demo button:hover{border-color:var(--silver)}
+.demo i{width:8px;height:8px;border-radius:50%;background:var(--c,var(--red));display:inline-block}
+.note{color:var(--muted);font-size:13px;margin:0}
+
+/* avisos do dono, equipe, acessos de teste */
+.avisos{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.avisos header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.avisos h2{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.uname{font-family:ui-monospace,'SFMono-Regular',Menlo,monospace;color:var(--silver)}
+details.testes{border-top:1px solid var(--line);padding-top:12px}
+details.testes summary{cursor:pointer;color:var(--muted);font-size:13px;font-weight:600}
+details.testes .demo{margin-top:10px}
+.tabs-gap{margin-left:auto}
+
+/* modais */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:grid;place-items:center;z-index:50;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+#ov2{z-index:70}
+.modal{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--red);border-radius:12px;width:min(520px,100%);max-height:100%;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:14px}
+.modal.wide{width:min(840px,100%)}
+.modal h2{font-family:var(--display);font-style:italic;font-weight:800;font-size:22px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px}
+.kv{display:grid;grid-template-columns:110px minmax(0,1fr);gap:6px 12px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;overflow-wrap:anywhere}
+.secblock{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.secblock h3{font-family:var(--display);font-style:italic;font-weight:800;font-size:15px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:#0a0a0b;
+  padding:10px 16px;border-radius:8px;font-weight:600;z-index:80;max-width:calc(100% - 32px)}
+
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr);gap:12px}
+  .nav{flex-direction:row;overflow-x:auto;gap:6px}
+  .nav button{border-left:0;border-bottom:3px solid transparent;border-radius:6px 6px 0 0;white-space:nowrap}
+  .nav button[aria-current="page"]{border-bottom-color:var(--red)}
+  .login{grid-template-columns:minmax(0,1fr);gap:24px;min-height:0}
+  .cols{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:560px){
+  .myjob{grid-template-columns:minmax(0,1fr)}
+  .two{grid-template-columns:minmax(0,1fr)}
+  .hbar{grid-template-columns:70px minmax(0,1fr) 84px}
+  .oslist{grid-template-columns:minmax(0,1fr)}
+  .modal{padding:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div id="root"></div>
+<div id="ov" class="ov" hidden><div id="md" class="modal" role="dialog" aria-modal="true" tabindex="-1"></div></div>
+<div id="ov2" class="ov" hidden data-act="close2"><figure class="lb"><img id="lbimg" alt=""><figcaption id="lbcap"></figcaption></figure></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function(){
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const brl=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const p2=n=>String(n).padStart(2,'0');
+
+/* Relógio real */
+const now=()=>Date.now();
+const hm=ts=>{const d=new Date(ts);return p2(d.getHours())+':'+p2(d.getMinutes())};
+const dm=ts=>{const d=new Date(ts);return p2(d.getDate())+'/'+p2(d.getMonth()+1)};
+const dthm=ts=>dm(ts)+' às '+hm(ts);
+const isToday=ts=>dm(ts)===dm(now());
+const dur=ms=>{const m=Math.max(0,Math.round(ms/60000));return m<60?m+' min':Math.floor(m/60)+' h '+p2(m%60)+' min'};
+
+const SETORES={
+ fun:{nome:'Funilaria',cor:'var(--fun)'},
+ prep:{nome:'Preparação',cor:'var(--prep)'},
+ pin:{nome:'Pintura',cor:'var(--pin)'},
+ mont:{nome:'Montagem',cor:'var(--mont)'},
+ pol:{nome:'Polimento',titulo:'Polimento e finalização',cor:'var(--pol)'}
+};
+const STAGES=['fun','prep','pin','mont','pol'];
+const tit=k=>SETORES[k].titulo||SETORES[k].nome;
+const ST_CAR={aguardando:'Aguardando',servico:'Em serviço',pronto:'Pronto p/ retirada',entregue:'Entregue'};
+const LOGL={aberta:'Aberta',pausada:'Pausada',retomada:'Retomada',finalizada:'Finalizada'};
+const MOTIVOS=['Serviço mais urgente','Falta de material','Aguardando peça','Pausa para refeição','Outro motivo'];
+
+/* Equipe, setores, logins e permissões. Para mudar alguém, edite esta lista. */
+const USERS=[
+ {id:'alex',nome:'Alex Ambrózio',curto:'Alex',papel:'dono',rotulo:'Diretor administrativo e comercial',usuario:'alex',senha:'alex123',faz:[],cor:'var(--red)'},
+ {id:'junior',nome:'Júnior Ambrózio',curto:'Júnior A.',papel:'gestor',rotulo:'Diretor de operações',usuario:'junior',senha:'junior123',faz:[],cor:'var(--red)'},
+ {id:'lukas',nome:'Lukas De Abreu',curto:'Lukas',papel:'func',rotulo:'Geral · todos os setores',usuario:'lukas',senha:'lukas123',faz:STAGES,cor:'var(--silver)'},
+ {id:'romario',nome:'Romário',curto:'Romário',papel:'func',rotulo:'Funilaria',usuario:'romario',senha:'romario123',faz:['fun'],cor:SETORES.fun.cor},
+ {id:'jefferson',nome:'Júnior Jefferson',curto:'Jefferson',papel:'func',rotulo:'Preparação',usuario:'jefferson',senha:'jefferson123',faz:['prep'],cor:SETORES.prep.cor},
+ {id:'eder',nome:'Éder',curto:'Éder',papel:'func',rotulo:'Pintura',usuario:'eder',senha:'eder123',faz:['pin'],cor:SETORES.pin.cor},
+ {id:'anderson',nome:'Anderson',curto:'Anderson',papel:'func',rotulo:'Montagem',usuario:'anderson',senha:'anderson123',faz:['mont'],cor:SETORES.mont.cor},
+ {id:'jubileu',nome:'Jubileu',curto:'Jubileu',papel:'func',rotulo:'Polimento e finalização',usuario:'jubileu',senha:'jubileu123',faz:['pol'],cor:SETORES.pol.cor},
+ {id:'lucasg',nome:'Lucas Glória',curto:'Lucas G.',papel:'func',rotulo:'Polimento e finalização',usuario:'lucas',senha:'lucas123',faz:['pol'],cor:SETORES.pol.cor},
+ {id:'aniela',nome:'Aniela',curto:'Aniela',papel:'estoque',rotulo:'Estoque e EPI',usuario:'aniela',senha:'aniela123',faz:[],cor:'var(--silver)'}
+];
+const PERM={dono:['agenda','os','patio','estoque','fin','equipe'],gestor:['agenda','os','patio','estoque'],estoque:['estoque'],func:['agenda']};
+const NOTIF_PARA=['alex'];
+const isAdmin=u=>u.papel==='dono'||u.papel==='gestor';
+const emp=id=>USERS.find(u=>u.id===id);
+const fn=id=>emp(id).curto;
+const initials=n=>n.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
+const norm=s=>s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+
+/* Carros. Começa vazio: os carros entram pelo botão "Registrar entrada". */
+let CARS=[];
+let nextCar=1;
+const car=id=>CARS.find(c=>c.id===+id);
+
+/* ordens de serviço */
+let nTask=1,nOS=1,nProb=1,nPh=1;
+const mk=(tasks,empId,st,log,doneN)=>({emp:empId||null,st:st||'fila',nota:'',log:log||[],tasks:tasks.map((t,i)=>({id:nTask++,txt:t,done:st==='feita'||i<(doneN||0)}))});
+const EMPTY=()=>({emp:null,st:'fila',nota:'',log:[],tasks:[]});
+const L=(k,ts,why)=>({k,ts,why});
+const mkOS=(carId,stages,photos)=>({id:nOS,num:'OS '+String(nOS++).padStart(4,'0'),car:carId,stages:Object.assign({fun:EMPTY(),prep:EMPTY(),pin:EMPTY(),mont:EMPTY(),pol:EMPTY()},stages),photos,problemas:[]});
+let OSL=[];
+const osOf=carId=>OSL.find(o=>o.car===+carId);
+
+/* notificações: vão para quem está em NOTIF_PARA (hoje, o Alex) */
+let nNot=1;
+let NOTIFS=[];
+const notify=(kind,txt,os)=>NOTIFS.push({id:nNot++,ts:now(),kind,txt,os,lida:false});
+
+/* estoque e EPI. Começa vazio: os itens entram pelo botão "+ Novo item". */
+let ESTOQUE=[];
+let nItem=1;
+
+/* financeiro. Começa vazio: os lançamentos entram pelo botão "+ Novo lançamento". */
+let FIN=[];
+let nFin=1;
+const state={user:null,view:'agenda',filtro:'todos',osFiltro:'abertas',finFiltro:'todos',estFiltro:'todos'};
+const DRAFT={photos:[]};
+
+/* ---------- regras da OS ---------- */
+const applicable=os=>STAGES.filter(k=>os.stages[k].tasks.length);
+const isDone=os=>applicable(os).every(k=>os.stages[k].st==='feita');
+const prevPending=(os,k)=>{const a=applicable(os);return a.slice(0,a.indexOf(k)).find(p=>os.stages[p].st!=='feita')};
+const myStages=(os,u)=>u.faz.filter(k=>applicable(os).includes(k)&&(os.stages[k].emp===null||os.stages[k].emp===u.id));
+function worked(s){let t=0,start=null;for(const e of s.log){if(e.k==='aberta'||e.k==='retomada')start=e.ts;else if((e.k==='pausada'||e.k==='finalizada')&&start!==null){t+=e.ts-start;start=null}}if(start!==null)t+=now()-start;return t}
+function stInfo(os,k){const s=os.stages[k];const pend=prevPending(os,k);let key=s.st;if(key==='fila'&&pend)key='bloq';
+  const label={fila:'Liberada',bloq:'Aguardando '+(pend?SETORES[pend].nome:''),andamento:'Em andamento',pausada:'Pausada',feita:'Finalizada'}[key];
+  return {key,label,cls:key==='bloq'||key==='fila'?'fazer':key}}
+function stLine(os,k){const s=os.stages[k],i=stInfo(os,k);
+  if(i.key==='andamento')return `Aberta às ${hm(s.log[0].ts)} · ${dur(worked(s))} trabalhados`;
+  if(i.key==='pausada'){const p=[...s.log].reverse().find(e=>e.k==='pausada');return `Pausada às ${hm(p.ts)}${p.why?' · '+p.why:''}`}
+  if(i.key==='feita')return `Finalizada ${dthm(s.log[s.log.length-1].ts)} · ${dur(worked(s))}`;
+  if(i.key==='fila')return 'Pronta para começar';
+  return '';}
+const finTs=s=>s.log.length?s.log[s.log.length-1].ts:0;
+const rank={andamento:0,pausada:1,fila:2,bloq:3,feita:4};
+
+/* ações da OS (cada uma avisa o Alex) */
+function startStage(os,k,u){const s=os.stages[k],t=now();s.st='andamento';s.log.push(L('aberta',t));
+  notify('open',`${fn(u.id)} abriu a OS do ${car(os.car).modelo} (${SETORES[k].nome}) às ${hm(t)}.`,os.id);return t}
+function pauseStage(os,k,u,why){const s=os.stages[k],t=now();s.st='pausada';s.log.push(L('pausada',t,why));
+  notify('pause',`${fn(u.id)} pausou a ${SETORES[k].nome} do ${car(os.car).modelo} às ${hm(t)}. Motivo: ${why}.`,os.id)}
+function resumeStage(os,k,u){const s=os.stages[k],t=now();s.st='andamento';s.log.push(L('retomada',t));
+  notify('open',`${fn(u.id)} retomou a ${SETORES[k].nome} do ${car(os.car).modelo} às ${hm(t)}.`,os.id)}
+function finishStage(os,k,u,nota,fotos){const s=os.stages[k],t=now();s.st='feita';s.nota=nota;s.log.push(L('finalizada',t));
+  fotos.forEach(src=>os.photos.push({id:nPh++,stage:k,leg:SETORES[k].nome+' concluída',src,ts:t,by:u.id}));
+  const c=car(os.car);const nx=applicable(os).find(x=>os.stages[x].st!=='feita');
+  notify('done',`${fn(u.id)} finalizou a ${SETORES[k].nome} do ${c.modelo} em ${dthm(t)}.${nx?' Próxima etapa: '+SETORES[nx].nome+'.':''}`,os.id);
+  if(isDone(os)){c.st='pronto';notify('done',`${c.modelo} está pronto para retirada.`,os.id)}}
+
+/* ---------- ícones e marca ---------- */
+const IC={
+ agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+ os:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h6"/></svg>',
+ patio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16M3 16h18v3H3zM7 19v1.5M17 19v1.5"/></svg>',
+ estoque:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></svg>',
+ fin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>',
+ equipe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 5a3.5 3.5 0 0 1 0 7M18 14c2.2.6 3.5 2.4 3.5 5"/></svg>',
+ bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4"/></svg>'
+};
+const wordmark=big=>`<span class="wm${big?' big':''}" aria-label="Ambrozio Car"><span class="wm-a">AMBROZIO</span><span class="wm-b">CAR</span></span>`;
+const speed='<div class="speed" aria-hidden="true"><i></i><b></b></div>';
+const stat=(l,v,s,cls='')=>`<div class="stat ${cls}"><span>${l}</span><strong class="num">${v}</strong>${s?`<small>${s}</small>`:''}</div>`;
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+
+/* ---------- login ---------- */
+function loginHtml(){
+  const demos=USERS.map(u=>`<button type="button" data-act="demo" data-u="${u.id}" style="--c:${u.cor}"><i></i>${esc(u.curto)} · ${esc(u.rotulo)}</button>`).join('');
+  return `<div class="login">
+    <section class="hero">${wordmark(true)}${speed}
+      <h1 style="font-family:var(--display);font-style:italic;font-weight:800;font-size:clamp(22px,3.4vw,30px)">Uma ordem de serviço por carro, do recebimento ao polimento.</h1>
+      <p>Cada pessoa entra com o seu acesso e vê só o que é da sua função. O Alex é avisado quando um serviço é aberto, pausado ou finalizado.</p>
+    </section>
+    <form class="card" id="f-login" autocomplete="off">
+      <h2>Entrar</h2>
+      <label>Usuário<input id="l-user" name="usuario" required placeholder="ex.: romario" autocapitalize="none"></label>
+      <label>Senha<input id="l-pass" name="senha" type="password" required placeholder="Sua senha"></label>
+      <p class="err" id="l-err" role="alert"></p>
+      <button class="btn red" type="submit">Entrar</button>
+      <details class="testes"><summary>Acessos de teste do protótipo</summary>
+        <p class="note" style="margin-top:8px">Toque em um nome para preencher usuário e senha.</p><div class="demo">${demos}</div></details>
+    </form></div>`;
+}
+
+/* ---------- estrutura ---------- */
+const NAVL=adm=>({agenda:adm?'Agenda':'Minha agenda',os:'Ordens de serviço',patio:'Pátio',estoque:'Estoque e EPI',fin:'Financeiro',equipe:'Equipe'});
+function appHtml(){
+  const u=state.user,adm=isAdmin(u),L2=NAVL(adm);
+  const hoje=new Date(now()).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const unread=NOTIFS.filter(n=>!n.lida).length,sino=NOTIF_PARA.includes(u.id);
+  const views={agenda:()=>adm?viewAgenda():viewMine(),os:viewOS,patio:viewPatio,estoque:viewEstoque,fin:viewFin,equipe:viewEquipe};
+  return `<header class="top">${wordmark()}<span class="date">${hoje}</span>
+    ${sino?`<button class="btn bell" data-act="notifs" aria-label="Notificações${unread?', '+unread+' novas':''}">${IC.bell}${unread?`<span class="badge">${unread}</span>`:''}</button>`:''}
+    <div class="who"><span class="avatar" style="--c:${u.cor}">${initials(u.nome)}</span>
+    <div><strong>${esc(u.nome)}</strong><small>${esc(u.rotulo)}</small></div></div>
+    <button class="btn sm ghost" data-act="logout">Sair</button></header>${speed}
+    <div class="app"><nav class="nav" aria-label="Seções">${PERM[u.papel].map(k=>`<button data-act="nav" data-v="${k}" ${state.view===k?'aria-current="page"':''}>${IC[k]}${L2[k]}</button>`).join('')}</nav>
+    <main>${views[state.view]()}</main></div>`;
+}
+
+/* ---------- agenda do dono e do diretor de operações ---------- */
+function itemHtml(os,k,dim){const c=car(os.car),i=stInfo(os,k),s=os.stages[k],dn=s.tasks.filter(t=>t.done).length;
+  return `<button class="item ${dim?'dim':''}" data-act="os" data-os="${os.id}"><div class="l1"><b>${esc(c.modelo)}</b><span class="plate">${esc(c.placa)}</span></div>
+    <div class="l2"><span class="pill s-${i.cls}">${i.label}</span><span>${esc(stLine(os,k))}</span></div><div class="l3 num">${dn} de ${s.tasks.length} itens feitos</div></button>`;}
+
+function viewAgenda(){
+  const all=[];OSL.forEach(os=>applicable(os).forEach(k=>all.push({os,k})));
+  const by=key=>all.filter(x=>stInfo(x.os,x.k).key===key).length;
+  const hojeN=all.filter(x=>x.os.stages[x.k].st==='feita'&&isToday(finTs(x.os.stages[x.k]))).length;
+  const sino=NOTIF_PARA.includes(state.user.id);
+  const novos=sino?NOTIFS.filter(n=>!n.lida).sort((a,b)=>b.ts-a.ts).slice(0,3):[];
+  const total=NOTIFS.filter(n=>!n.lida).length;
+  let h=`<div class="pagehead"><div><h1>Agenda de serviços</h1><p>O que cada funcionário está fazendo e o que está na fila</p></div><button class="btn red" data-act="newos">+ Registrar entrada</button></div>
+    ${novos.length?`<section class="avisos" aria-label="Avisos novos"><header><h2>Avisos novos${total>novos.length?' ('+total+')':''}</h2><button class="btn sm ghost" data-act="notifs">Ver todos</button></header>
+      ${novos.map(n=>`<button class="notif new" data-act="os" data-os="${n.os}" data-n="${n.id}"><i class="k-${n.kind}"></i><span>${esc(n.txt)}</span><small>${dthm(n.ts)}</small></button>`).join('')}</section>`:''}
+    <div class="stats">${stat('Em andamento',by('andamento'),'agora')}${stat('Pausadas',by('pausada'),'')}${stat('Na fila',by('fila')+by('bloq'),'liberadas ou aguardando')}${stat('Finalizadas hoje',hojeN,'etapas')}</div>
+    <div class="bar">${[['todos','Todos'],...STAGES.map(k=>[k,SETORES[k].nome])].map(([k,l])=>`<button class="tab" data-act="filtro" data-f="${k}" aria-pressed="${state.filtro===k}">${l}</button>`).join('')}</div>`;
+  STAGES.filter(k=>state.filtro==='todos'||state.filtro===k).forEach(k=>{
+    const rows=all.filter(x=>x.k===k);
+    const vis=x=>x.os.stages[k].st!=='feita'||isToday(finTs(x.os.stages[k]));
+    const sort=(a,b)=>rank[stInfo(a.os,a.k).key]-rank[stInfo(b.os,b.k).key];
+    h+=`<div class="sechead" style="--c:${SETORES[k].cor}">${tit(k)}</div><div class="cards">`;
+    USERS.filter(u=>u.faz.includes(k)).forEach(u=>{
+      const mine=rows.filter(x=>x.os.stages[k].emp===u.id).filter(vis).sort(sort);
+      if(u.faz.length>1&&!mine.length)return;
+      const act=mine.filter(x=>x.os.stages[k].st!=='feita').length;
+      h+=`<div class="empcard" style="--c:${SETORES[k].cor}"><header><span class="avatar" style="--c:${u.cor}">${initials(u.nome)}</span><div><strong>${esc(u.nome)}</strong><small>${act} ${act===1?'serviço ativo':'serviços ativos'}</small></div></header>
+        ${mine.length?mine.map(x=>itemHtml(x.os,k,x.os.stages[k].st==='feita')).join(''):'<div class="empty">Sem serviços no momento.</div>'}</div>`;
+    });
+    const free=rows.filter(x=>x.os.stages[k].emp===null&&x.os.stages[k].st!=='feita').sort(sort);
+    if(free.length)h+=`<div class="empcard" style="--c:${SETORES[k].cor}"><header><span class="avatar" style="--c:var(--muted)">?</span><div><strong>Qualquer do setor</strong><small>Sem responsável definido</small></div></header>${free.map(x=>itemHtml(x.os,k)).join('')}</div>`;
+    h+='</div>';
+  });
+  return h;
+}
+
+/* ---------- agenda do funcionário (inclui o Lukas, que faz todas as etapas) ---------- */
+function viewMine(){
+  const u=state.user,items=[];
+  OSL.forEach(os=>myStages(os,u).forEach(k=>items.push({os,k,i:stInfo(os,k)})));
+  const g=keys=>items.filter(x=>keys.includes(x.i.key));
+  const ativos=g(['andamento','pausada']),lib=g(['fila']),bloq=g(['bloq']);
+  const feitas=items.filter(x=>x.i.key==='feita'&&isToday(finTs(x.os.stages[x.k])));
+  const multi=u.faz.length>1;
+  const card=x=>{const os=x.os,k=x.k,s=os.stages[k],c=car(os.car);
+    const btn=x.i.key==='fila'?'Abrir OS':x.i.key==='andamento'||x.i.key==='pausada'?'Continuar':'Ver OS';
+    return `<div class="myjob" style="--c:${SETORES[k].cor}"><div><div class="l1"><b>${esc(c.modelo)}</b><span class="plate">${esc(c.placa)}</span>${multi?`<span class="pill" style="color:${SETORES[k].cor}">${SETORES[k].nome}</span>`:''}<span class="pill s-${x.i.cls}">${x.i.label}</span></div>
+      <div class="l2" style="margin-top:4px">${esc(stLine(os,k))}</div>
+      <ul>${s.tasks.map(t=>`<li>${esc(t.txt)}${t.done?' (feito)':''}</li>`).join('')}</ul>
+      ${x.i.key==='fila'?'<div class="hint">Ao abrir, o Alex é avisado e o serviço começa a contar.</div>':''}</div>
+      <button class="btn ${x.i.key==='fila'?'red':''}" data-act="os" data-os="${os.id}" data-stage="${k}">${btn}</button></div>`};
+  const sec=(t,l,empty)=>`<h2 class="sec">${t}</h2><div class="mylist">${l.length?l.map(card).join(''):`<div class="empty">${empty}</div>`}</div>`;
+  const hoje=new Date(now()).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  return `<div class="pagehead"><div><h1>Minha agenda</h1><p>${esc(u.rotulo)} · ${hoje}</p></div></div>
+    <div class="stats">${stat('Em andamento',ativos.length,'')}${stat('Liberadas',lib.length,'prontas para abrir')}${stat('Aguardando',bloq.length,'etapa anterior')}${stat('Finalizadas hoje',feitas.length,'')}</div>
+    ${sec('Em andamento ou pausadas',ativos,'Nenhum serviço aberto agora.')}
+    ${sec('Liberadas para você',lib,'Nenhum carro liberado no momento.')}
+    ${sec('Aguardando a etapa anterior',bloq,'Nada aguardando.')}
+    ${feitas.length?sec('Finalizadas hoje',feitas,''):''}`;
+}
+
+/* ---------- lista de OS ---------- */
+function viewOS(){
+  const list=OSL.filter(os=>state.osFiltro==='todas'||(state.osFiltro==='abertas')===!isDone(os)).sort((a,b)=>b.id-a.id);
+  const cards=list.map(os=>{const c=car(os.car);const nx=applicable(os).find(k=>os.stages[k].st!=='feita');
+    return `<button class="oscard" data-act="os" data-os="${os.id}"><div class="l1"><b style="font-size:17px">${esc(c.modelo)}</b><span class="plate">${esc(c.placa)}</span></div>
+    <div class="sub">${os.num} · ${esc(c.cliente)} · entrada ${c.ent}</div>
+    <ol class="stepper">${applicable(os).map(k=>{const i=stInfo(os,k),s=os.stages[k];return `<li class="step t-${i.key}"><span>${SETORES[k].nome}</span><small>${s.emp?esc(fn(s.emp)):'Qualquer'} · ${i.label}</small></li>`}).join('')}</ol>
+    <div class="sub" style="margin-top:6px">${nx?'Etapa atual: '+SETORES[nx].nome:'Todas as etapas finalizadas'} · ${os.photos.length} fotos${os.problemas.some(p=>p.aberto)?' · <span class="crit">problema sinalizado</span>':''}</div></button>`}).join('');
+  return `<div class="pagehead"><div><h1>Ordens de serviço</h1><p>Uma por carro, com as etapas, as fotos e o histórico</p></div><button class="btn red" data-act="newos">+ Registrar entrada</button></div>
+    <div class="bar">${[['abertas','Abertas'],['finalizadas','Finalizadas'],['todas','Todas']].map(([k,l])=>`<button class="tab" data-act="osf" data-f="${k}" aria-pressed="${state.osFiltro===k}">${l}</button>`).join('')}</div>
+    <div class="oslist">${cards||'<div class="empty">Nenhuma ordem de serviço nesta lista.</div>'}</div>`;
+}
+
+/* ---------- detalhe da OS ---------- */
+const figs=(os,list)=>list.length?`<div class="thumbs">${list.map(p=>`<figure class="fig"><button class="thumb" data-act="photo" data-os="${os.id}" data-ph="${p.id}" aria-label="Ampliar foto: ${esc(p.leg)}"><img src="${p.src}" alt="${esc(p.leg)}"></button><figcaption>${esc(p.leg)}<br>${esc(fn(p.by))} · ${dthm(p.ts)}</figcaption></figure>`).join('')}</div>`:'<span class="note">Nenhuma foto.</span>';
+
+function stageBox(os,k,u,adm,mine){
+  const s=os.stages[k],i=stInfo(os,k),isMine=mine.includes(k),canTick=isMine&&s.st==='andamento',ap=applicable(os);
+  const later=!adm&&s.st==='feita'&&u.faz.some(x=>STAGES.indexOf(x)>STAGES.indexOf(k)&&ap.includes(x));
+  const resp=adm&&s.st!=='feita'?`<span class="resp">Responsável <select data-assign="${os.id}" data-stage="${k}" aria-label="Responsável pela ${SETORES[k].nome}"><option value="">Qualquer do setor</option>${USERS.filter(x=>x.faz.includes(k)).map(x=>`<option value="${x.id}" ${s.emp===x.id?'selected':''}>${esc(x.nome)}</option>`).join('')}</select></span>`
+    :`<span class="resp">${s.emp?esc(emp(s.emp).nome):'Qualquer do setor'}</span>`;
+  return `<section class="stagebox ${isMine?'mine':''}" style="--c:${SETORES[k].cor}"><header><h3>${tit(k)}</h3><span class="pill s-${i.cls}">${i.label}</span>${isMine?'<span class="pill" style="color:var(--silver)">Sua etapa</span>':''}${resp}</header>
+    <div class="tasks">${s.tasks.map(t=>`<label class="task ${t.done?'done':''}"><input type="checkbox" data-task="${t.id}" data-os="${os.id}" data-stage="${k}" ${t.done?'checked':''} ${canTick?'':'disabled'}><span>${esc(t.txt)}</span></label>`).join('')}</div>
+    ${adm&&s.st!=='feita'?`<div class="addtask"><input id="nt-${os.id}-${k}" placeholder="Novo item para a ${SETORES[k].nome}" aria-label="Novo item para a ${SETORES[k].nome}"><button class="btn sm" data-act="addtask" data-os="${os.id}" data-stage="${k}">Adicionar</button></div>`:''}
+    ${s.log.length?`<ol class="log">${s.log.map(e=>`<li><b>${LOGL[e.k]}</b> ${dthm(e.ts)}${e.why?' · '+esc(e.why):''}</li>`).join('')}</ol><div class="worked">Tempo trabalhado: <strong class="num">${dur(worked(s))}</strong></div>`:''}
+    ${s.nota?`<div class="note">Observação ao finalizar: ${esc(s.nota)}</div>`:''}
+    ${s.st==='feita'?`<div class="subh">Fotos da etapa finalizada</div>${figs(os,os.photos.filter(p=>p.stage===k))}`:''}
+    ${later?`<div><button class="btn sm" data-act="flag" data-os="${os.id}" data-stage="${k}">Sinalizar problema nesta etapa</button></div>`:''}</section>`;
+}
+
+function osDetail(id,keep){
+  const os=OSL.find(x=>x.id===+id),c=car(os.car),u=state.user,adm=isAdmin(u),ap=applicable(os);
+  const mine=adm?[]:myStages(os,u);
+  const probs=os.problemas.filter(p=>p.aberto).map(p=>`<div class="banner crit"><div><strong>Problema sinalizado por ${esc(fn(p.by))} (${esc(emp(p.by).rotulo)}) na etapa de ${SETORES[p.stage].nome} · ${dthm(p.ts)}</strong><br>${esc(p.txt)}</div>${adm?`<button class="btn sm" data-act="resolve" data-os="${os.id}" data-p="${p.id}">Marcar resolvido</button>`:''}</div>`).join('');
+  const bars=mine.map(k=>{const s=os.stages[k],pend=prevPending(os,k);
+    if(s.st==='feita')return '';
+    if(pend)return `<div class="banner">A sua etapa (${SETORES[k].nome}) começa quando a ${SETORES[pend].nome} for finalizada. Você pode ver a ordem de serviço e as fotos.</div>`;
+    if(s.st==='andamento')return `<div class="actionbar"><div><strong>Sua etapa: ${SETORES[k].nome}</strong><small>Aberta às ${hm(s.log[0].ts)} · ${dur(worked(s))} trabalhados</small></div><div class="act"><button class="btn" data-act="pause" data-os="${os.id}" data-stage="${k}">Pausar serviço</button><button class="btn red" data-act="finish" data-os="${os.id}" data-stage="${k}">Finalizar serviço</button></div></div>`;
+    if(s.st==='pausada')return `<div class="actionbar"><div><strong>Sua etapa: ${SETORES[k].nome}</strong><small>Pausada às ${hm([...s.log].reverse().find(e=>e.k==='pausada').ts)}</small></div><div class="act"><button class="btn red" data-act="resume" data-os="${os.id}" data-stage="${k}">Retomar serviço</button></div></div>`;
+    return `<div class="actionbar"><div><strong>Sua etapa: ${SETORES[k].nome}</strong><small>Liberada para você</small></div><div class="act"><button class="btn red" data-act="start" data-os="${os.id}" data-stage="${k}">Abrir etapa</button></div></div>`;
+  }).join('');
+  openModal(`<div class="oshead"><div><h2>${esc(c.modelo)} <span class="plate">${esc(c.placa)}</span></h2><p>${os.num} · ${esc(c.cliente)} · ${esc(c.cor)} · entrada ${c.ent}</p></div><button class="btn sm ghost" data-act="close">Fechar</button></div>
+    ${probs}${bars}
+    <div class="subh">Fotos do recebimento</div>${figs(os,os.photos.filter(p=>p.stage==='in'))}
+    ${ap.map(k=>stageBox(os,k,u,adm,mine)).join('')}`,true,keep);
+}
+
+/* ---------- pátio ---------- */
+function viewPatio(){
+  const dentro=CARS.filter(c=>c.st!=='entregue');
+  const ordem={pronto:0,servico:1,aguardando:2,entregue:3};
+  const rows=[...CARS].sort((a,b)=>ordem[a.st]-ordem[b.st]).map(c=>{const os=osOf(c.id);
+    const nx=os&&applicable(os).find(k=>os.stages[k].st!=='feita');
+    const etapa=!os?'Sem OS':nx?SETORES[nx].nome:'Concluída';
+    const acao=c.st==='entregue'?`<small>Saiu em ${c.saida}</small>`
+      :`<div class="btns">${os?`<button class="btn sm" data-act="os" data-os="${os.id}">Ver OS</button>`:`<button class="btn sm red" data-act="newos" data-car="${c.id}">Criar OS</button>`}${c.st==='pronto'?`<button class="btn sm red" data-act="carout" data-car="${c.id}">Registrar saída</button>`:''}</div>`;
+    return `<tr><td><strong>${esc(c.modelo)}</strong><small>${esc(c.cor)}</small></td><td><span class="plate">${esc(c.placa)}</span></td><td>${esc(c.cliente)}</td><td>${etapa}</td><td class="num">${c.ent}</td><td class="num">${c.prev||'—'}</td><td><span class="pill p-${c.st}">${ST_CAR[c.st]}</span></td><td class="r">${acao}</td></tr>`}).join('');
+  return `<div class="pagehead"><div><h1>Pátio</h1><p>Veículos que entram e saem da oficina</p></div><button class="btn red" data-act="newos">+ Registrar entrada</button></div>
+    <div class="stats">${stat('No pátio agora',dentro.length,'veículos')}${stat('Entradas hoje',CARS.filter(c=>c.ent===dm(now())).length,'')}
+      ${stat('Prontos p/ retirada',CARS.filter(c=>c.st==='pronto').length,'')}${stat('Saídas hoje',CARS.filter(c=>c.saida===dm(now())).length,'')}</div>
+    <div class="tablewrap"><table><thead><tr><th>Veículo</th><th>Placa</th><th>Cliente</th><th>Etapa atual</th><th>Entrada</th><th>Previsão</th><th>Situação</th><th class="r">Ação</th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="note">Nenhum veículo registrado. Use “Registrar entrada”.</td></tr>'}</tbody></table></div>`;
+}
+
+/* ---------- estoque e EPI ---------- */
+const nivel=i=>i.qtd<=i.min*0.5?'crit':i.qtd<i.min?'warn':'ok';
+function viewEstoque(){
+  const baixos=ESTOQUE.filter(i=>nivel(i)!=='ok'),ord={crit:0,warn:1,ok:2};
+  const lista=ESTOQUE.filter(i=>state.estFiltro==='todos'||i.cat===state.estFiltro);
+  const rows=[...lista].sort((a,b)=>ord[nivel(a)]-ord[nivel(b)]||a.nome.localeCompare(b.nome)).map(i=>{const n=nivel(i),pct=Math.min(100,Math.round(i.qtd/(i.min*2)*100));
+    return `<tr><td><strong>${esc(i.nome)}</strong></td><td>${i.cat}</td><td class="num">${i.min} ${esc(i.un)}</td>
+      <td><div class="meter ${n}" role="img" aria-label="${pct}% do nível ideal"><i style="width:${pct}%"></i></div></td>
+      <td><span class="pill ${n==='ok'?'ok':n}">${n==='ok'?'Normal':n==='warn'?'Baixo':'Crítico'}</span></td>
+      <td><div class="qty"><button data-act="est" data-id="${i.id}" data-d="-1" aria-label="Retirar 1 de ${esc(i.nome)}">−</button><strong class="num">${i.qtd}</strong><button data-act="est" data-id="${i.id}" data-d="1" aria-label="Adicionar 1 de ${esc(i.nome)}">+</button><small>${esc(i.un)}</small></div></td></tr>`}).join('');
+  return `<div class="pagehead"><div><h1>Estoque e EPI</h1><p>Materiais da oficina e equipamentos de proteção</p></div><button class="btn red" data-act="newitem">+ Novo item</button></div>
+    <div class="stats">${stat('Itens cadastrados',ESTOQUE.length,'')}${stat('Abaixo do mínimo',baixos.length,baixos.length?'repor em breve':'tudo em dia',baixos.length?'alert':'')}${stat('EPI abaixo do mínimo',baixos.filter(i=>i.cat==='EPI').length,'')}</div>
+    <div class="bar">${[['todos','Tudo'],['Material','Materiais'],['EPI','EPI']].map(([k,l])=>`<button class="tab" data-act="estf" data-f="${k}" aria-pressed="${state.estFiltro===k}">${l}</button>`).join('')}</div>
+    <div class="tablewrap"><table><thead><tr><th>Item</th><th>Tipo</th><th>Mínimo</th><th>Nível</th><th>Situação</th><th class="r">Em estoque</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="note">Nenhum item cadastrado. Use “+ Novo item”.</td></tr>'}</tbody></table></div>`;
+}
+
+/* ---------- financeiro ---------- */
+function viewFin(){
+  const ent=FIN.filter(f=>f.tipo==='in'),sai=FIN.filter(f=>f.tipo==='out');
+  const rec=ent.filter(f=>f.pago).reduce((a,f)=>a+f.valor,0),apr=ent.filter(f=>!f.pago).reduce((a,f)=>a+f.valor,0),des=sai.reduce((a,f)=>a+f.valor,0);
+  const porSetor=STAGES.map(s=>({s,pago:ent.filter(f=>f.setor===s&&f.pago).reduce((a,f)=>a+f.valor,0),pend:ent.filter(f=>f.setor===s&&!f.pago).reduce((a,f)=>a+f.valor,0)})).filter(x=>x.pago+x.pend>0);
+  const max=Math.max(1,...porSetor.map(x=>x.pago+x.pend));
+  const bars=porSetor.map(x=>`<div class="hbar" style="--c:${SETORES[x.s].cor}"><span>${SETORES[x.s].nome}</span>
+    <div class="track" role="img" aria-label="${SETORES[x.s].nome}: ${brl(x.pago)} recebido, ${brl(x.pend)} a receber"><div class="paid" style="width:${x.pago/max*100}%"></div><div class="pend" style="width:${x.pend/max*100}%"></div></div><strong class="num">${brl(x.pago+x.pend)}</strong></div>`).join('');
+  const lista=FIN.filter(f=>state.finFiltro==='todos'||(state.finFiltro==='pend'?(f.tipo==='in'&&!f.pago):f.pago)).sort((a,b)=>b.data.split('/').reverse().join('').localeCompare(a.data.split('/').reverse().join('')));
+  const rows=lista.map(f=>`<tr><td class="num">${f.data}</td><td>${esc(f.desc)}</td><td>${SETORES[f.setor]?SETORES[f.setor].nome:esc(f.setor)}</td>
+    <td class="r num ${f.tipo==='in'?'in':'out'}">${f.tipo==='in'?'+':'−'} ${brl(f.valor)}</td><td>${f.pago?`<span class="pill ok">${f.tipo==='in'?'Recebido':'Pago'}</span>`:(f.tipo==='in'?'<span class="pill warn">A receber</span>':'<span class="pill warn">A pagar</span>')}</td>
+    <td class="r">${!f.pago?`<button class="btn sm" data-act="receber" data-id="${f.id}">${f.tipo==='in'?'Marcar recebido':'Marcar pago'}</button>`:''}</td></tr>`).join('');
+  const mes=cap(new Date(now()).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}));
+  return `<div class="pagehead"><div><h1>Financeiro</h1><p>${mes}</p></div><button class="btn red" data-act="newfin">+ Novo lançamento</button></div>
+    <div class="stats">${stat('Recebido',brl(rec),'')}${stat('A receber',brl(apr),'')}${stat('Despesas',brl(des),'')}${stat('Saldo do mês',brl(rec-des),rec-des>=0?'positivo':'negativo')}</div>
+    <div class="cols"><section class="panel"><h3>Faturamento por setor</h3>${bars||'<p class="note">Nenhuma entrada lançada ainda.</p>'}<div class="key"><span><i></i>Recebido</span><span><i class="h"></i>A receber</span></div></section>
+      <section class="panel"><h3>Resumo</h3><dl class="kv"><dt>Faturado</dt><dd class="num">${brl(rec+apr)}</dd><dt>Recebido</dt><dd class="num in">${brl(rec)}</dd><dt>A receber</dt><dd class="num warn">${brl(apr)}</dd><dt>Despesas</dt><dd class="num out">${brl(des)}</dd><dt>Saldo atual</dt><dd class="num"><strong>${brl(rec-des)}</strong></dd></dl></section></div>
+    <div class="bar">${[['todos','Tudo'],['pend','A receber'],['pago','Pagos']].map(([k,l])=>`<button class="tab" data-act="finf" data-f="${k}" aria-pressed="${state.finFiltro===k}">${l}</button>`).join('')}</div>
+    <div class="tablewrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Setor / tipo</th><th class="r">Valor</th><th>Situação</th><th class="r"></th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="note">Nenhum lançamento.</td></tr>'}</tbody></table></div>`;
+}
+
+/* ---------- equipe ---------- */
+function viewEquipe(){
+  const acesso=u=>u.papel==='dono'?'Tudo, com financeiro e notificações':u.papel==='gestor'?'Agenda, ordens de serviço, pátio e estoque':u.papel==='estoque'?'Estoque e EPI':u.faz.length>1?'Todas as etapas das ordens de serviço':'Etapa de '+SETORES[u.faz[0]].nome;
+  const rows=USERS.map(u=>`<tr><td><div class="l1"><span class="avatar" style="--c:${u.cor}">${initials(u.nome)}</span><strong>${esc(u.nome)}</strong></div></td><td>${esc(u.rotulo)}</td><td><span class="uname">${esc(u.usuario)}</span></td><td>${esc(acesso(u))}</td><td>${NOTIF_PARA.includes(u.id)?'<span class="pill warn">Recebe avisos</span>':''}</td></tr>`).join('');
+  return `<div class="pagehead"><div><h1>Equipe</h1><p>Quem entra no sistema e o que cada pessoa vê</p></div></div>
+    <div class="tablewrap"><table><thead><tr><th>Nome</th><th>Função</th><th>Usuário</th><th>Acesso</th><th>Avisos</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="note" style="margin-top:12px">Os avisos de abrir, pausar e finalizar serviço vão para o Alex.</p>`;
+}
+
+/* ---------- modais ---------- */
+function openModal(h,wide,keep){const md=$('#md'),ov=$('#ov'),sc=md.scrollTop,was=!ov.hidden;
+  md.className='modal'+(wide?' wide':'');md.innerHTML=h;ov.hidden=false;md.scrollTop=(keep&&was)?sc:0;if(!was)md.focus({preventScroll:true});}
+function closeModal(){$('#ov').hidden=true;$('#md').innerHTML='';DRAFT.photos=[];}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,3200);}
+const picker=()=>`<div class="photos"><label class="addphoto"><input type="file" accept="image/*" multiple data-draft="1"><span class="btn sm">+ Adicionar fotos</span></label><div id="thumbs" class="thumbs"></div></div>`;
+function thumbsDraft(){const el=$('#thumbs');if(el)el.innerHTML=DRAFT.photos.map((s,i)=>`<div class="thumb"><img src="${s}" alt="Foto ${i+1}"><button type="button" class="rm" data-act="rmdraft" data-i="${i}" aria-label="Remover foto ${i+1}">×</button></div>`).join('');}
+function readImg(file){return new Promise(res=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const m=1000,s=Math.min(1,m/Math.max(im.width,im.height));const cv=document.createElement('canvas');cv.width=Math.round(im.width*s);cv.height=Math.round(im.height*s);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);res(cv.toDataURL('image/jpeg',0.72))};im.onerror=()=>res(null);im.src=fr.result};fr.onerror=()=>res(null);fr.readAsDataURL(file)})}
+
+function osForm(carId){
+  DRAFT.photos=[];const c=carId?car(carId):null;
+  const dados=c?`<div class="banner"><div><strong>${esc(c.modelo)}</strong> <span class="plate">${esc(c.placa)}</span><br><span class="note">${esc(c.cliente)} · ${esc(c.cor)} · entrada ${c.ent}</span></div></div>`
+   :`<div class="two"><label>Placa<input id="c-placa" required maxlength="8" placeholder="ABC-1D23" style="text-transform:uppercase"></label><label>Cor<input id="c-cor" required placeholder="Marrom"></label></div>
+     <div class="two"><label>Modelo<input id="c-modelo" required placeholder="ex.: Honda Civic"></label><label>Cliente<input id="c-cli" required placeholder="Nome do cliente"></label></div>
+     <label>Previsão de entrega ao cliente (opcional)<input id="c-prev" type="date"></label>`;
+  const ex={fun:'Desamassar a coluna',prep:'Dar acabamento na coluna\nLixar a porta para alongar',pin:'Pintar a coluna\nPintar a porta',mont:'Montar a porta e o para-choque',pol:'Polir a coluna e a porta'};
+  const blocos=STAGES.map(k=>`<div class="secblock" style="--c:${SETORES[k].cor}"><h3>${tit(k)}</h3>
+    <label>Serviços (um por linha)<textarea id="o-t-${k}" rows="2" placeholder="${ex[k]}"></textarea></label>
+    <label>Responsável<select id="o-e-${k}"><option value="">Qualquer do setor</option>${USERS.filter(x=>x.faz.includes(k)).map(x=>`<option value="${x.id}">${esc(x.nome)}</option>`).join('')}</select></label></div>`).join('');
+  openModal(`<h2>${c?'Criar ordem de serviço':'Registrar entrada'}</h2><form id="f-os" data-car="${c?c.id:''}" style="display:flex;flex-direction:column;gap:12px">
+    ${dados}
+    <div><div class="subh" style="margin-bottom:6px">Fotos do recebimento</div>${picker()}</div>
+    <div class="subh">Serviços por setor</div><p class="note">Deixe em branco o setor que não vai trabalhar neste carro. As etapas seguem na ordem: Funilaria, Preparação, Pintura, Montagem e Polimento.</p>
+    ${blocos}<p class="err" id="o-err" role="alert"></p>
+    <div class="actions"><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn red" type="submit">Criar ordem de serviço</button></div></form>`,true);
+}
+function itemForm(){
+  openModal(`<h2>Novo item</h2><form id="f-item" style="display:flex;flex-direction:column;gap:12px">
+    <label>Nome<input id="i-nome" required placeholder="ex.: Luvas nitrílicas"></label>
+    <div class="two"><label>Tipo<select id="i-cat"><option>Material</option><option>EPI</option></select></label><label>Unidade<input id="i-un" required placeholder="un, L, kg, pares"></label></div>
+    <div class="two"><label>Quantidade agora<input id="i-qtd" type="number" min="0" step="1" required value="0"></label><label>Mínimo desejado<input id="i-min" type="number" min="0" step="1" required value="1"></label></div>
+    <div class="actions"><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn red" type="submit">Adicionar</button></div></form>`);
+}
+function finForm(){
+  const hoje=new Date(now()),iso=hoje.getFullYear()+'-'+p2(hoje.getMonth()+1)+'-'+p2(hoje.getDate());
+  openModal(`<h2>Novo lançamento</h2><form id="f-fin" style="display:flex;flex-direction:column;gap:12px">
+    <div class="two"><label>Tipo<select id="n-tipo"><option value="in">Entrada</option><option value="out">Despesa</option></select></label><label>Data<input id="n-data" type="date" required value="${iso}"></label></div>
+    <label>Descrição<input id="n-desc" required placeholder="ex.: Honda Civic · Pintura de porta"></label>
+    <div class="two"><label>Setor / tipo<select id="n-setor">${STAGES.map(k=>`<option value="${k}">${SETORES[k].nome}</option>`).join('')}<option>Pessoal</option><option>Fixas</option><option>Material</option><option>Outros</option></select></label>
+    <label>Valor (R$)<input id="n-valor" type="number" min="0" step="0.01" required placeholder="0,00"></label></div>
+    <label class="task" style="font-size:14px"><input type="checkbox" id="n-pago"><span>Já foi pago / recebido</span></label>
+    <div class="actions"><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn red" type="submit">Adicionar</button></div></form>`);
+}
+function pauseForm(osId,k){
+  openModal(`<h2>Pausar serviço</h2><form id="f-pause" data-os="${osId}" data-stage="${k}" style="display:flex;flex-direction:column;gap:12px"><label>Motivo da pausa<select id="p-why">${MOTIVOS.map(m=>`<option>${m}</option>`).join('')}</select></label>
+    <p class="note">O Alex é avisado com o horário e o motivo.</p><div class="actions"><button type="button" class="btn" data-act="backos" data-os="${osId}">Voltar</button><button class="btn red" type="submit">Pausar</button></div></form>`);
+}
+function finishForm(osId,k){
+  DRAFT.photos=[];const os=OSL.find(x=>x.id===+osId),s=os.stages[k],falta=s.tasks.filter(t=>!t.done);
+  openModal(`<h2>Finalizar ${SETORES[k].nome}</h2><form id="f-finish" data-os="${osId}" data-stage="${k}" style="display:flex;flex-direction:column;gap:12px">
+    ${falta.length?`<div class="banner crit"><div><strong>Ainda falta marcar:</strong><br>${falta.map(t=>esc(t.txt)).join('<br>')}</div></div>`:'<div class="banner"><span class="ok">Todos os itens estão marcados como feitos.</span></div>'}
+    <div><div class="subh" style="margin-bottom:6px">Fotos do serviço finalizado</div>${picker()}</div>
+    <label>Observação (opcional)<textarea id="f-nota" rows="2" placeholder="Algo que a próxima etapa precisa saber"></textarea></label>
+    <p class="err" id="f-err" role="alert"></p>
+    <div class="actions"><button type="button" class="btn" data-act="backos" data-os="${osId}">Voltar</button><button class="btn red" type="submit">Finalizar serviço</button></div></form>`);
+}
+function flagForm(osId,k){
+  openModal(`<h2>Sinalizar problema</h2><form id="f-flag" data-os="${osId}" data-stage="${k}" style="display:flex;flex-direction:column;gap:12px">
+    <p class="note">Etapa: ${SETORES[k].nome}. O Alex é avisado.</p>
+    <label>O que está errado ou faltando?<textarea id="g-txt" rows="3" required placeholder="ex.: a porta não foi pintada"></textarea></label>
+    <div class="actions"><button type="button" class="btn" data-act="backos" data-os="${osId}">Voltar</button><button class="btn red" type="submit">Enviar aviso</button></div></form>`);
+}
+function notifsModal(){
+  const l=[...NOTIFS].sort((a,b)=>b.ts-a.ts);
+  openModal(`<h2>Notificações</h2><div class="notifs">${l.length?'':'<p class="note">Nenhuma notificação ainda.</p>'}${l.map(n=>`<button class="notif ${n.lida?'':'new'}" data-act="os" data-os="${n.os}" data-n="${n.id}"><i class="k-${n.kind}"></i><span>${esc(n.txt)}</span><small>${dthm(n.ts)}</small></button>`).join('')}</div>
+    <div class="actions"><button class="btn" data-act="readall">Marcar todas como lidas</button><button class="btn red" data-act="close">Fechar</button></div>`);
+}
+
+function openOS(id){const os=OSL.find(x=>x.id===+id),u=state.user;
+  if(!isAdmin(u)){const k=myStages(os,u).find(x=>os.stages[x].st==='fila'&&!prevPending(os,x));
+    if(k){const t=startStage(os,k,u);toast(`OS aberta às ${hm(t)}. O Alex foi avisado.`);render();}}
+  osDetail(id);}
+function refreshOS(id){render();osDetail(id,true);}
+function render(){$('#root').innerHTML=state.user?appHtml():loginHtml();}
+
+/* ---------- eventos ---------- */
+document.addEventListener('click',e=>{
+  if(e.target.id==='ov'){closeModal();return;}
+  const t=e.target.closest('[data-act]');if(!t)return;
+  const a=t.dataset.act,d=t.dataset;
+  if(a==='close2'){$('#ov2').hidden=true;return;}
+  if(a==='demo'){const u=emp(d.u);$('#l-user').value=u.usuario;$('#l-pass').value=u.senha;$('#l-err').textContent='';}
+  else if(a==='logout'){state.user=null;state.filtro='todos';closeModal();render();}
+  else if(a==='nav'){state.view=d.v;render();}
+  else if(a==='filtro'){state.filtro=d.f;render();}
+  else if(a==='osf'){state.osFiltro=d.f;render();}
+  else if(a==='finf'){state.finFiltro=d.f;render();}
+  else if(a==='estf'){state.estFiltro=d.f;render();}
+  else if(a==='newos'){osForm(d.car);}
+  else if(a==='newitem'){itemForm();}
+  else if(a==='newfin'){finForm();}
+  else if(a==='os'){if(d.n){const n=NOTIFS.find(x=>x.id===+d.n);if(n){n.lida=true;render();}}openOS(d.os);}
+  else if(a==='close'){closeModal();}
+  else if(a==='backos'){osDetail(d.os);}
+  else if(a==='pause'){pauseForm(d.os,d.stage);}
+  else if(a==='finish'){finishForm(d.os,d.stage);}
+  else if(a==='flag'){flagForm(d.os,d.stage);}
+  else if(a==='start'){const os=OSL.find(x=>x.id===+d.os);const tt2=startStage(os,d.stage,state.user);toast(`Etapa aberta às ${hm(tt2)}. O Alex foi avisado.`);refreshOS(os.id);}
+  else if(a==='resume'){const os=OSL.find(x=>x.id===+d.os);resumeStage(os,d.stage,state.user);toast('Serviço retomado. O Alex foi avisado.');refreshOS(os.id);}
+  else if(a==='resolve'){const os=OSL.find(x=>x.id===+d.os);os.problemas.find(p=>p.id===+d.p).aberto=false;refreshOS(os.id);toast('Problema marcado como resolvido');}
+  else if(a==='addtask'){const os=OSL.find(x=>x.id===+d.os),inp=$('#nt-'+d.os+'-'+d.stage),v=inp.value.trim();if(!v){inp.focus();return;}
+    os.stages[d.stage].tasks.push({id:nTask++,txt:v,done:false});refreshOS(os.id);}
+  else if(a==='photo'){const os=OSL.find(x=>x.id===+d.os),p=os.photos.find(x=>x.id===+d.ph);$('#lbimg').src=p.src;$('#lbimg').alt=p.leg;$('#lbcap').textContent=p.leg+' · '+fn(p.by)+' · '+dthm(p.ts);$('#ov2').hidden=false;}
+  else if(a==='rmdraft'){DRAFT.photos.splice(+d.i,1);thumbsDraft();}
+  else if(a==='notifs'){notifsModal();}
+  else if(a==='readall'){NOTIFS.forEach(n=>n.lida=true);render();notifsModal();}
+  else if(a==='carout'){const c=car(d.car);c.st='entregue';c.saida=dm(now());render();toast('Saída registrada');}
+  else if(a==='est'){const i=ESTOQUE.find(x=>x.id===+d.id);i.qtd=Math.max(0,i.qtd+(+d.d));render();}
+  else if(a==='receber'){FIN.find(x=>x.id===+d.id).pago=true;render();toast('Pagamento registrado');}
+});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('#ov2').hidden)$('#ov2').hidden=true;else if(!$('#ov').hidden)closeModal();});
+document.addEventListener('change',async e=>{
+  const t=e.target;
+  if(t.dataset.task){const os=OSL.find(x=>x.id===+t.dataset.os);const tk=os.stages[t.dataset.stage].tasks.find(x=>x.id===+t.dataset.task);tk.done=t.checked;refreshOS(os.id);}
+  else if(t.dataset.assign){const os=OSL.find(x=>x.id===+t.dataset.assign);os.stages[t.dataset.stage].emp=t.value||null;refreshOS(os.id);toast('Responsável atualizado');}
+  else if(t.dataset.draft){const files=[...t.files];for(const f of files){const src=await readImg(f);if(src)DRAFT.photos.push(src);}t.value='';thumbsDraft();}
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();const f=e.target,id=f.id;
+  if(id==='f-login'){
+    const u=USERS.find(x=>x.usuario===norm($('#l-user').value));
+    if(!u||$('#l-pass').value!==u.senha){$('#l-err').textContent='Usuário ou senha incorretos. Confira e tente de novo.';return;}
+    state.user=u;state.view=PERM[u.papel][0];render();
+  }else if(id==='f-os'){
+    const stages={};let total=0;
+    STAGES.forEach(k=>{const lines=$('#o-t-'+k).value.split('\n').map(s=>s.trim()).filter(Boolean);total+=lines.length;if(lines.length)stages[k]=mk(lines,$('#o-e-'+k).value||null);});
+    if(!total){$('#o-err').textContent='Escreva ao menos um serviço em algum setor.';return;}
+    let c;
+    if(f.dataset.car)c=car(f.dataset.car);
+    else{const pv=$('#c-prev').value.split('-');
+      c={id:nextCar++,placa:$('#c-placa').value.trim().toUpperCase(),modelo:$('#c-modelo').value.trim(),cor:$('#c-cor').value.trim(),cliente:$('#c-cli').value.trim(),st:'servico',ent:dm(now()),prev:pv.length===3?pv[2]+'/'+pv[1]:''};CARS.push(c);}
+    c.st='servico';
+    const t=now();
+    const os=mkOS(c.id,stages,DRAFT.photos.map(src=>({id:nPh++,stage:'in',leg:'Recebimento',src,ts:t,by:state.user.id})));
+    OSL.push(os);closeModal();state.view='os';state.osFiltro='abertas';render();toast(`${os.num} criada para ${c.modelo}`);
+  }else if(id==='f-item'){
+    ESTOQUE.push({id:nItem++,cat:$('#i-cat').value,nome:$('#i-nome').value.trim(),un:$('#i-un').value.trim(),qtd:Math.max(0,+$('#i-qtd').value||0),min:Math.max(0,+$('#i-min').value||0)});
+    closeModal();render();toast('Item adicionado ao estoque');
+  }else if(id==='f-fin'){
+    const dt=$('#n-data').value.split('-');
+    FIN.push({id:nFin++,tipo:$('#n-tipo').value,data:dt[2]+'/'+dt[1],desc:$('#n-desc').value.trim(),setor:$('#n-setor').value,valor:Math.max(0,+$('#n-valor').value||0),pago:$('#n-pago').checked});
+    closeModal();render();toast('Lançamento adicionado');
+  }else if(id==='f-pause'){
+    const os=OSL.find(x=>x.id===+f.dataset.os);pauseStage(os,f.dataset.stage,state.user,$('#p-why').value);toast('Serviço pausado. O Alex foi avisado.');refreshOS(os.id);
+  }else if(id==='f-finish'){
+    const os=OSL.find(x=>x.id===+f.dataset.os),k=f.dataset.stage,s=os.stages[k];
+    if(s.tasks.some(x=>!x.done)){$('#f-err').textContent='Marque todos os itens como feitos antes de finalizar.';return;}
+    if(!DRAFT.photos.length){$('#f-err').textContent='Tire ao menos uma foto do serviço finalizado.';return;}
+    finishStage(os,k,state.user,$('#f-nota').value.trim(),DRAFT.photos);DRAFT.photos=[];toast('Serviço finalizado. O Alex foi avisado.');refreshOS(os.id);
+  }else if(id==='f-flag'){
+    const os=OSL.find(x=>x.id===+f.dataset.os),k=f.dataset.stage,txt=$('#g-txt').value.trim();if(!txt)return;
+    os.problemas.push({id:nProb++,stage:k,by:state.user.id,ts:now(),txt,aberto:true});
+    notify('problem',`${fn(state.user.id)} (${state.user.rotulo}) sinalizou um problema na ${SETORES[k].nome} do ${car(os.car).modelo}: ${txt}`,os.id);
+    toast('Aviso enviado ao Alex');refreshOS(os.id);
+  }
+});
+render();
+})();
+</script>
+
+</body></html>

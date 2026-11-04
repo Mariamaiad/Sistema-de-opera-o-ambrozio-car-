@@ -372,9 +372,13 @@ details.testes .demo{margin-top:10px}
 <div id="ov" class="ov" hidden><div id="md" class="modal" role="dialog" aria-modal="true" tabindex="-1"></div></div>
 <div id="ov2" class="ov" hidden data-act="close2"><figure class="lb"><img id="lbimg" alt=""><figcaption id="lbcap"></figcaption></figure></div>
 <div id="toast" class="toast" hidden></div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(function(){
+  const SUPABASE_URL = 'https://fvsnwvwbrvdmhmiqzyvr.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_ZcP4T73Q_JqtmqzOil-75g_RmwSahKH';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  (function(){
+    
 const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const brl=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -534,7 +538,11 @@ function idbAll(){return new Promise(res=>{if(!idb)return res({});try{const out=
 const NOPHOTO='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260"><rect width="400" height="260" fill="#1b1b20"/><text x="200" y="135" font-family="Arial" font-size="16" fill="#9a9ea8" text-anchor="middle">foto não encontrada neste aparelho</text></svg>');
 function addPhoto(os,stage,leg,src,by,ts){const ph={id:nPh++,stage,leg,src,ts:ts||now(),by};os.photos.push(ph);idbPut(ph.id,src);return ph}
 const rep=(k,v)=>idb&&k==='src'&&typeof v==='string'&&v.startsWith('data:image/jpeg')?'@':v;
-function save(){try{localStorage.setItem(SKEY,JSON.stringify({v:2,CARS,OSL,NOTIFS,ESTOQUE,FIN,TODO,POSTS,IDEIAS,SENHAS,c:{nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo,nPost,nIdeia}},rep))}catch(e){if(!saveWarned){saveWarned=true;setTimeout(()=>toast('Não deu para salvar neste aparelho (memória cheia ou bloqueada).'),50)}}}
+let remoteSaveTimer=null,remoteSaveBusy=false,remoteSaveAgain=false,remoteLoadDone=false;
+function snapshotForCloud(){return {v:2,CARS,OSL:OSL.map(o=>({...o,photos:(o.photos||[]).map(p=>({...p,src:undefined,cloud_pending:true}))})),NOTIFS,ESTOQUE,FIN,TODO,POSTS,IDEIAS,SENHAS,c:{nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo,nPost,nIdeia}}}
+function scheduleCloudSave(){if(!state.user?.authId||!remoteLoadDone)return;if(remoteSaveTimer)clearTimeout(remoteSaveTimer);remoteSaveTimer=setTimeout(async()=>{if(remoteSaveBusy){remoteSaveAgain=true;return}remoteSaveBusy=true;try{const {error}=await sb.from('ambrozio_app_state').upsert({id:'main',payload:snapshotForCloud(),updated_by:state.user.authId,updated_at:new Date().toISOString()},{onConflict:'id'});if(error)throw error}catch(e){console.error('Cloud save:',e);toast('Falha na sincronização Supabase. Confira o SQL/RLS.')}finally{remoteSaveBusy=false;if(remoteSaveAgain){remoteSaveAgain=false;scheduleCloudSave()}}},700)}
+function save(){try{localStorage.setItem(SKEY,JSON.stringify({v:2,CARS,OSL,NOTIFS,ESTOQUE,FIN,TODO,POSTS,IDEIAS,SENHAS,c:{nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo,nPost,nIdeia}},rep));scheduleCloudSave()}catch(e){if(!saveWarned){saveWarned=true;setTimeout(()=>toast('Não deu para salvar neste aparelho (memória cheia ou bloqueada).'),50)}}}
+async function loadCloudState(){try{const {data,error}=await sb.from('ambrozio_app_state').select('payload').eq('id','main').maybeSingle();if(error)throw error;if(data?.payload){const d=data.payload;if(d&&d.v===2){CARS=d.CARS||[];OSL=d.OSL||[];NOTIFS=d.NOTIFS||[];ESTOQUE=d.ESTOQUE||[];FIN=d.FIN||[];TODO=d.TODO||[];POSTS=d.POSTS||[];IDEIAS=d.IDEIAS||[];SENHAS=d.SENHAS||{};const c=d.c||{};nextCar=c.nextCar||1;nTask=c.nTask||1;nOS=c.nOS||412;nProb=c.nProb||1;nPh=c.nPh||1;nNot=c.nNot||1;nItem=c.nItem||1;nTodo=c.nTodo||1;nPost=c.nPost||1;nIdeia=c.nIdeia||1}}remoteLoadDone=true;return true}catch(e){console.error('Cloud load:',e);toast('Não foi possível carregar dados Supabase; confira SQL/RLS.');return false}}
 function load(){try{const r=localStorage.getItem(SKEY);if(!r)return false;const d=JSON.parse(r);if(!d||d.v!==2)return false;
   CARS=d.CARS;OSL=d.OSL;NOTIFS=d.NOTIFS||[];ESTOQUE=d.ESTOQUE||ESTOQUE;FIN=d.FIN||FIN;TODO=d.TODO||[];POSTS=d.POSTS||[];IDEIAS=d.IDEIAS||[];SENHAS=d.SENHAS||{};({nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo}=d.c);nPost=d.c.nPost||1;nIdeia=d.c.nIdeia||1;return true}catch(e){return false}}
 
@@ -752,7 +760,9 @@ function viewMine(){
   const feitas=items.filter(x=>x.s.st==='feita'&&isToday(finTs(x.s)));
   const meta=items.filter(x=>x.s.meta===TK()),md=meta.filter(x=>x.s.st==='feita').length,p=pct(md,meta.length);
   const multi=u.faz.length>1;
-  const nextIdx=pend.findIndex(x=>x.s.st==='andamento'||x.s.st==='pausada')>=0?-1:pend.findIndex(x=>stInfo(x.os,x.k).key==='fila');
+  // Colaborador recebe apenas o carro/etapa que está liberado no momento.
+  const currentJob=pend.find(x=>x.s.st==='andamento'||x.s.st==='pausada')||pend.find(x=>stInfo(x.os,x.k).key==='fila')||null;
+  const nextIdx=currentJob?pend.indexOf(currentJob):-1;
   const card=(x,n)=>{const os=x.os,k=x.k,s=os.stages[k],c=car(os.car),i=stInfo(os,k);
     const btn=i.key==='fila'?'Abrir OS':i.key==='andamento'||i.key==='pausada'?'Continuar':'Ver OS';
     const isNext=n===nextIdx;
@@ -767,8 +777,8 @@ function viewMine(){
     <section class="metabox" style="grid-template-columns:minmax(0,1fr)"><div class="metabig"><span>Sua meta de hoje</span><strong class="num">${p}%</strong><small class="num">${md} de ${meta.length} serviços finalizados</small>${prog(p,'big')}</div></section>
     ${u.mkt?(()=>{const hj=POSTS.filter(p=>p.dia===TK());return `<div class="banner" style="margin-bottom:6px"><span>Marketing hoje: ${hj.length?hj.length+' '+(hj.length===1?'conteúdo':'conteúdos')+' · '+hj.filter(p=>p.status==='postado').length+' postado(s)':'nada agendado'}</span><button class="btn sm" data-act="nav" data-v="mkt">Abrir marketing</button></div>`})():''}
     <h2 class="sec">Sua fila <small>na ordem definida pelo Alex</small></h2>
-    <div class="mylist">${pend.length?pend.map(card).join(''):'<div class="empty">Nenhum carro na sua fila agora.</div>'}</div>
-    ${feitas.length?`<h2 class="sec">Finalizadas hoje</h2><div class="mylist">${feitas.map(x=>card(x,-2)).join('')}</div>`:''}`;
+    <div class="mylist">${currentJob?card(currentJob,0):'<div class="empty">Nenhum carro liberado para você neste momento. Aguarde a próxima etapa.</div>'}</div>
+    ${feitas.length?`<h2 class="sec">Serviços finalizados hoje <small>${feitas.length}</small></h2>`:''}`;
 }
 
 /* ---------- agenda pessoal do Alex ---------- */
@@ -836,6 +846,7 @@ function viewOS(){
     <ol class="stepper">${applicable(os).map(k=>{const i=stInfo(os,k),s=os.stages[k];return `<li class="step t-${i.key}"><span>${SETORES[k].nome}</span><small>${s.emp?esc(fn(s.emp)):'Qualquer'} · ${i.key==='bloq'?'Aguardando':i.label}</small></li>`}).join('')}</ol>
     <div class="sub" style="margin-top:6px">${esc(carSummary(c))}${os.problemas.some(p=>p.aberto)?' · <span class="crit">problema sinalizado</span>':''}</div></button>`}).join('');
   return `<div class="pagehead"><div><h1>Ordens de serviço</h1><p>Uma por carro. A OS sempre está no setor onde o carro está.</p></div><button class="btn red" data-act="newos">+ Registrar entrada</button></div>
+    <div class="bar"><button class="btn sm" data-act="report" data-days="30">Relatório mensal · PDF</button><button class="btn sm" data-act="report" data-days="60">Relatório 60 dias · PDF</button><button class="btn sm" data-act="report" data-days="90">Relatório 90 dias · PDF</button></div>
     <div class="bar">${[['abertas','Abertas'],['finalizadas','Finalizadas'],['todas','Todas']].map(([k,l])=>`<button class="tab" data-act="osf" data-f="${k}" aria-pressed="${state.osFiltro===k}">${l}</button>`).join('')}</div>
     <div class="oslist">${cards||'<div class="empty">Nenhuma ordem de serviço nesta lista.</div>'}</div>`;
 }
@@ -879,13 +890,43 @@ function osDetail(id,keep){
   const entTxt=c.entrega===TK()?`Entregar hoje${c.hora?' às '+c.hora:''}`:'';
   openModal(`<div class="oshead"><div><h2>${esc(cn(c))} ${plateH(c)}</h2><p>${os.num}${c.cliente?' · '+esc(c.cliente):''}${c.ent?' · entrada '+c.ent:''}${entTxt?' · <strong class="warn">'+entTxt+'</strong>':''}</p>
       ${adm?`<div class="headbtns"><button class="btn sm" data-act="editcar" data-car="${c.id}" data-os="${os.id}">${c.placa?'Editar dados do carro':'Cadastrar placa'}</button>${c.st!=='entregue'?`<button class="btn sm" data-act="entrega" data-car="${c.id}" data-os="${os.id}">${entTxt?'Alterar entrega':'Marcar entrega para hoje'}</button>`:''}${c.st==='pronto'?`<button class="btn sm red" data-act="carout" data-car="${c.id}" data-os="${os.id}">Registrar entrega</button>`:''}</div>`:''}</div>
-      <button class="btn sm ghost" data-act="close">Fechar</button></div>
+      <button class="btn sm" data-act="reportos" data-os="${os.id}">PDF completo para cliente</button><button class="btn sm ghost" data-act="close">Fechar</button></div>
+    ${os.service||os.parts?`<div class="banner"><div><strong>Serviço:</strong> ${esc(os.service||'Não informado')}<br><strong>Peças:</strong> ${esc(os.parts||'Não informado')}</div></div>`:''}
     ${probs}${carbar}${bars}
     <div class="subh">Fotos do recebimento (${os.photos.filter(p=>p.stage==='in').length})</div>${figs(os,os.photos.filter(p=>p.stage==='in'))}
     ${adm?`<div><label class="addphoto"><input type="file" accept="image/*" multiple data-stagephoto="${os.id}" data-stage="in"><span class="btn sm">+ Adicionar fotos do recebimento</span></label></div>`:''}
     ${ap.map(k=>stageBox(os,k,u,adm,mine)).join('')}`,true,keep);
 }
 
+
+/* ---------- relatórios PDF (janela de impressão do navegador: Salvar como PDF) ---------- */
+function reportPDF(days,osId){
+  const cutoff=now()-Number(days||30)*86400000;
+  const rows=(osId?OSL.filter(o=>o.id===+osId):OSL.filter(o=>applicable(o).some(k=>finTs(o.stages[k])>=cutoff)))
+    .sort((a,b)=>b.id-a.id);
+  const generated=new Date(now()).toLocaleString('pt-BR');
+  const detail=rows.map(os=>{
+    const c=car(os.car)||{};
+    const dates=applicable(os).map(k=>({k,ts:finTs(os.stages[k]),st:os.stages[k]})).filter(x=>x.ts);
+    const completion=dates.length?new Date(Math.max(...dates.map(x=>x.ts))).toLocaleDateString('pt-BR'):'Em andamento';
+    const stages=applicable(os).map(k=>`<tr><td>${SETORES[k].nome}</td><td>${esc(fn(os.stages[k].emp))}</td><td>${esc(os.stages[k].st==='feita'?'Finalizada':os.stages[k].st==='andamento'?'Em andamento':os.stages[k].st==='pausada'?'Pausada':'Aguardando')}</td><td>${os.stages[k].nota?esc(os.stages[k].nota):'—'}</td></tr>`).join('');
+    const photos=os.photos.map(p=>`<figure><img src="${p.src}" alt="${esc(p.leg)}"><figcaption>${esc(p.leg)} · ${esc(fn(p.by))} · ${dthm(p.ts)}</figcaption></figure>`).join('');
+    return `<article><h2>${esc(os.num)} · ${esc(c.modelo||'Veículo')} ${esc(c.cor||'')}</h2><p><b>Cliente:</b> ${esc(c.cliente||'Não informado')} &nbsp; <b>Placa:</b> ${esc(c.placa||'Não informada')} &nbsp; <b>Conclusão:</b> ${completion}</p>
+      <p><b>Serviço solicitado:</b> ${esc(os.service||'Não informado')}<br><b>Peças:</b> ${esc(os.parts||'Não informado')}</p>
+      <table><thead><tr><th>Etapa</th><th>Responsável</th><th>Status</th><th>Observação</th></tr></thead><tbody>${stages}</tbody></table>
+      <h3>Fotos do processo (${os.photos.length})</h3><div class="photos">${photos||'<p>Sem fotos anexadas.</p>'}</div></article>`;
+  }).join('');
+  const title=osId?'Relatório da Ordem de Serviço':'Relatório operacional · '+days+' dias';
+  const w=window.open('','_blank');
+  if(!w){toast('Permita pop-ups para gerar o PDF.');return;}
+  w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${title}</title><style>
+    body{font:12px Arial,sans-serif;color:#202124;margin:24px}h1{font-size:22px}h2{font-size:17px;border-bottom:1px solid #bbb;padding-bottom:6px}h3{font-size:14px}
+    article{page-break-after:always;margin-bottom:24px}table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #bbb;padding:6px;text-align:left;vertical-align:top}th{background:#eee}
+    .photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.photos figure{margin:0;break-inside:avoid}.photos img{width:100%;height:150px;object-fit:contain;border:1px solid #ddd}.photos figcaption{font-size:10px;margin-top:4px}
+    .head{display:flex;justify-content:space-between;border-bottom:2px solid #222;padding-bottom:10px;margin-bottom:18px}@media print{button{display:none}body{margin:10mm}}
+  </style></head><body><div class="head"><div><h1>AMBROZIO CAR</h1><b>${title}</b></div><small>Gerado em ${generated}</small></div>${detail||'<p>Nenhuma O.S. com atividade concluída no período.</p>'}<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script></body></html>`);
+  w.document.close();
+}
 /* ---------- pátio ---------- */
 function viewPatio(){
   const dentro=CARS.filter(c=>c.st!=='entregue');
@@ -973,7 +1014,8 @@ function osForm(carId,placa){
     <label>Responsável<select id="o-e-${k}"><option value="">Qualquer do setor</option>${USERS.filter(x=>x.faz.includes(k)).map(x=>`<option value="${x.id}" ${DEF_EMP[k]===x.id?'selected':''}>${esc(x.nome)}</option>`).join('')}</select></label></div>`).join('');
   openModal(`<h2>${c?'Criar ordem de serviço':'Registrar entrada'}</h2><form id="f-os" data-car="${c?c.id:''}" style="display:flex;flex-direction:column;gap:12px">
     ${dados}
-    <div><div class="subh" style="margin-bottom:6px">Fotos do recebimento</div>${picker()}</div>
+    <div class="two"><label>Serviço<textarea id="o-service" rows="2" placeholder="Descreva os serviços solicitados"></textarea></label><label>Peças<textarea id="o-parts" rows="2" placeholder="Peças utilizadas ou necessárias"></textarea></label></div>
+    <div><div class="subh" style="margin-bottom:6px">Fotos do recebimento · mínimo de 3</div>${picker()}</div>
     <div class="subh">Setores por onde o carro vai passar</div><p class="note">Desmarque o setor que não vai trabalhar neste carro. A OS anda junto com o carro: Funilaria, Preparação, Pintura, Montagem e Polimento.</p>
     ${blocos}
     <label class="task"><input type="checkbox" id="o-meta" checked><span>Colocar o primeiro setor na meta de hoje</span></label>
@@ -1033,7 +1075,7 @@ function finishForm(osId,k,goto){
   openModal(`<h2>Finalizar ${SETORES[k].nome}</h2><form id="f-finish" data-os="${osId}" data-stage="${k}" data-goto="${goto||''}" style="display:flex;flex-direction:column;gap:12px">
     ${falta.length?`<div class="banner crit"><div><strong>Ainda falta marcar:</strong><br>${falta.map(t=>esc(t.txt)).join('<br>')}</div></div>`:s.tasks.length?'<div class="banner"><span class="ok">Todos os itens estão marcados como feitos.</span></div>':''}
     ${nx?`<p class="note">Ao finalizar, o carro e a OS vão para a ${SETORES[nx].nome}${os.stages[nx].emp?' ('+esc(fn(os.stages[nx].emp))+')':''}.</p>`:'<p class="note">Esta é a última etapa: o carro fica pronto para retirada.</p>'}
-    <div><div class="subh" style="margin-bottom:6px">Fotos da finalização · obrigatório pelo menos 1</div><p class="note" style="margin:0 0 6px">Pode colocar quantas fotos precisar.</p>${picker()}</div>
+    <div><div class="subh" style="margin-bottom:6px">Fotos da finalização · mínimo de 3 por etapa</div><p class="note" style="margin:0 0 6px">Adicione fotos durante o andamento; para finalizar, esta etapa precisa ter pelo menos 3 fotos.</p>${picker()}</div>
     <label>Observação (opcional)<textarea id="f-nota" rows="2" placeholder="Algo que a próxima etapa precisa saber"></textarea></label>
     <p class="err" id="f-err" role="alert"></p>
     <div class="actions"><button type="button" class="btn" data-act="backos" data-os="${osId}">Voltar</button><button class="btn red" type="submit">Finalizar serviço</button></div></form>`);
@@ -1056,22 +1098,63 @@ function openOS(id){const os=OSL.find(x=>x.id===+id),u=state.user;if(!os)return;
   osDetail(id);}
 function refreshOS(id){render();osDetail(id,true);}
 function render(){save();$('#root').innerHTML=state.user?appHtml():loginHtml();}
+sb.auth.getSession().then(async ({data,error})=>{
+  if(error || !data.session) return;
+
+  const authUser=data.session.user;
+
+  const {data:profile,error:profileError}=await sb
+    .from('profiles')
+    .select('id,nome,papel,ativo')
+    .eq('id',authUser.id)
+    .single();
+
+  if(profileError || !profile || !profile.ativo){
+    await sb.auth.signOut();
+    state.user=null;
+    render();
+    return;
+  }
+
+  const username=authUser.email==='ambroziocar@gmail.com'?'alex':null;
+  const u=USERS.find(x=>x.usuario===username);
+
+  if(!u){
+    await sb.auth.signOut();
+    state.user=null;
+    render();
+    return;
+  }
+
+  state.user={
+    ...u,
+    nome:profile.nome,
+    authId:profile.id,
+    papel:profile.papel
+  };
+
+  state.view=navFor(state.user)[0];
+  await loadCloudState();
+  render();
+});
 const getOS=id=>OSL.find(x=>x.id===+id);
 function swap(os,k,dir){const s=os.stages[k],g=group(k,s.emp),i=g.indexOf(os),j=i+dir;if(i<0||j<0||j>=g.length)return;
   const o=g[j].stages[k],t=o.ord;o.ord=s.ord;s.ord=t;renumber(k);}
 
 /* ---------- eventos ---------- */
-document.addEventListener('click',e=>{
+document.addEventListener('click',async e=>{
   if(e.target.id==='ov'){closeModal();return;}
   const qr=$('#qres');if(qr&&!e.target.closest('.search'))qr.hidden=true;
   const t=e.target.closest('[data-act]');if(!t)return;
   const a=t.dataset.act,d=t.dataset;
   if(a==='close2'){$('#ov2').hidden=true;return;}
   if(a==='demo'){const u=emp(d.u);$('#l-user').value=u.usuario;$('#l-pass').value=u.senha;$('#l-err').textContent='';}
-  else if(a==='logout'){state.user=null;state.filtro='todos';closeModal();render();}
+  else if(a==='logout'){await sb.auth.signOut();state.user=null;state.view='todos';closeModal();render();}
   else if(a==='nav'){state.view=d.v;closeModal();render();}
   else if(a==='filtro'){state.filtro=d.f;render();}
   else if(a==='osf'){state.osFiltro=d.f;render();}
+  else if(a==='report'){reportPDF(+d.days);}
+  else if(a==='reportos'){reportPDF(0,d.os);}
   else if(a==='finf'){state.finFiltro=d.f;render();}
   else if(a==='estf'){state.estFiltro=d.f;render();}
   else if(a==='newos'){if(qr)qr.hidden=true;osForm(d.car,d.placa);}
@@ -1153,17 +1236,72 @@ document.addEventListener('change',async e=>{
     t.value='';refreshOS(os.id);toast(n?`${n} ${n===1?'foto adicionada':'fotos adicionadas'}`:'Não foi possível ler a foto');}
   else if(t.dataset.draft){const files=[...t.files];for(const f of files){const src=await readImg(f);if(src)DRAFT.photos.push(src);}t.value='';thumbsDraft();}
 });
-document.addEventListener('submit',e=>{
+document.addEventListener('submit',async e=>{
   e.preventDefault();const f=e.target,id=f.id;
-  if(id==='f-login'){
-    const u=USERS.find(x=>x.usuario===norm($('#l-user').value));
-    if(!u||$('#l-pass').value!==senhaDe(u)){$('#l-err').textContent='Usuário ou senha incorretos. Confira e tente de novo.';return;}
-    state.user=u;state.view=navFor(u)[0];render();
-  }else if(id==='f-os'){
+  
+if(id==='f-login'){
+    const username=norm($('#l-user').value);
+    const password=$('#l-pass').value;
+
+    const loginMap={
+        alex:'ambroziocar@gmail.com'
+    };
+
+    const email=loginMap[username];
+
+    if(!email){
+        $('#l-err').textContent='Usuário não encontrado.';
+        return;
+    }
+
+    const {data,error}=await sb.auth.signInWithPassword({
+        email:email,
+        password:password
+    });
+
+    if(error){
+        $('#l-err').textContent='Usuário ou senha incorretos. Confira e tente de novo.';
+        return;
+    }
+
+    const {data:profile,error:profileError}=await sb
+        .from('profiles')
+        .select('id,nome,papel,ativo')
+        .eq('id',data.user.id)
+        .single();
+
+    if(profileError||!profile||!profile.ativo){
+        await sb.auth.signOut();
+        $('#l-err').textContent='Perfil não encontrado ou usuário inativo.';
+        return;
+    }
+
+    const u=USERS.find(x=>x.usuario===username);
+
+    if(!u){
+        await sb.auth.signOut();
+        $('#l-err').textContent='Usuário não configurado no sistema.';
+        return;
+    }
+
+    state.user={
+        ...u,
+        nome:profile.nome,
+        authId:profile.id,
+        papel:profile.papel
+    };
+
+    state.view=navFor(state.user)[0];
+    await loadCloudState();
+    render();
+    return;
+}
+else if(id==='f-os'){
     const stages={};let first=null;
     STAGES.forEach(k=>{if(!$('#o-on-'+k).checked)return;const lines=$('#o-t-'+k).value.split('\n').map(s=>s.trim()).filter(Boolean);
       stages[k]=ST({on:true,emp:$('#o-e-'+k).value||null,tasks:lines.map(txt=>({id:nTask++,txt,done:false}))});if(!first)first=k;});
     if(!first){$('#o-err').textContent='Marque pelo menos um setor.';return;}
+    if(DRAFT.photos.length<3){$('#o-err').textContent='Adicione pelo menos 3 fotos do recebimento.';return;}
     let c;
     if(f.dataset.car)c=car(f.dataset.car);
     else{const pl=$('#c-placa').value.trim().toUpperCase(),ex=pl&&CARS.find(x=>plateN(x.placa)===plateN(pl));
@@ -1171,7 +1309,7 @@ document.addEventListener('submit',e=>{
       else{c={id:nextCar++,placa:pl,modelo:$('#c-modelo').value.trim(),cor:$('#c-cor').value.trim(),cliente:$('#c-cli').value.trim(),st:'servico',ent:dm(now()),prev:'',entrega:null,hora:'',entOrd:0};CARS.push(c);}}
     c.st='servico';c.entrega=c.entrega===TK()?c.entrega:null;
     const t=now();
-    const os=mkOS(c.id,stages,[]);DRAFT.photos.forEach(src=>addPhoto(os,'in','Recebimento',src,state.user.id,t));
+    const os=mkOS(c.id,stages,[]);os.service=$('#o-service').value.trim();os.parts=$('#o-parts').value.trim();DRAFT.photos.forEach(src=>addPhoto(os,'in','Recebimento',src,state.user.id,t));
     OSL.push(os);if($('#o-meta').checked)os.stages[first].meta=TK();toEnd(os,first);
     closeModal();render();toast(`${os.num} criada para ${cn(c)} · está na ${SETORES[first].nome}`);
   }else if(id==='f-car'){
@@ -1211,7 +1349,8 @@ document.addEventListener('submit',e=>{
   }else if(id==='f-finish'){
     const os=getOS(f.dataset.os),k=f.dataset.stage,s=os.stages[k];
     if(s.tasks.some(x=>!x.done)){$('#f-err').textContent='Marque todos os itens como feitos antes de finalizar.';return;}
-    if(!DRAFT.photos.length){$('#f-err').textContent='Tire ao menos uma foto do serviço finalizado.';return;}
+    const already=os.photos.filter(p=>p.stage===k).length;
+    if(already+DRAFT.photos.length<3){$('#f-err').textContent=`Esta etapa precisa ter no mínimo 3 fotos. Já existem ${already}; adicione mais ${3-already} antes de finalizar.`;return;}
     finishStage(os,k,state.user,$('#f-nota').value.trim(),DRAFT.photos);DRAFT.photos=[];if(f.dataset.goto&&curStage(os)&&curStage(os)!==f.dataset.goto)moveTo(os,f.dataset.goto,state.user);const nx=curStage(os);
     toast(nx?`Finalizado. Carro e OS foram para a ${SETORES[nx].nome}. O Alex foi avisado.`:'Finalizado. Carro pronto para retirada. O Alex foi avisado.');refreshOS(os.id);
   }else if(id==='f-flag'){

@@ -428,7 +428,7 @@ const USERS=[
  {id:'lucasg',nome:'Lucas Glória',curto:'Lucas aux.',papel:'func',rotulo:'Polimento · auxiliar',usuario:'lucas',senha:'lucas123',faz:['pol'],cor:SETORES.pol.cor},
  {id:'aniela',nome:'Aniela',curto:'Aniela',papel:'estoque',rotulo:'Estoque e EPI',usuario:'aniela',senha:'aniela123',faz:[],cor:'var(--silver)'}
 ];
-const PERM={dono:['agenda','alex','mkt','os','patio','estoque','fin','equipe'],gestor:['agenda','os','patio','estoque'],estoque:['estoque'],func:['agenda']};
+const PERM={dono:['agenda','alex','mkt','os','patio','estoque','fin','equipe','clientes'],gestor:['agenda','os','patio','estoque','clientes'],estoque:['estoque'],func:['agenda']};
 const NOTIF_PARA=['alex'];
 const navFor=u=>{const l=[...PERM[u.papel]];if(u.mkt&&!l.includes('mkt'))l.push('mkt');return l};
 const DEF_EMP={fun:'romario',prep:null,pin:'eder',mont:'anderson',pol:'jubileu'};
@@ -441,7 +441,7 @@ const plateN=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 const showIn=(u,k)=>u.faz.includes(k)&&(u.faz.length===1||u.base===k);
 
 /* ---------- dados ---------- */
-let CARS=[],OSL=[],NOTIFS=[],TODO=[],POSTS=[],IDEIAS=[];let nPost=1,nIdeia=1;let SENHAS={};
+let CARS=[],OSL=[],NOTIFS=[],TODO=[],POSTS=[],IDEIAS=[],CLIENTS=[];let nPost=1,nIdeia=1;let SENHAS={};
 const senhaDe=u=>SENHAS[u.id]||u.senha;
 let nextCar=1,nTask=1,nOS=412,nProb=1,nPh=1,nNot=1,nItem=19,nTodo=1;
 const car=id=>CARS.find(c=>c.id===+id);
@@ -539,12 +539,12 @@ const NOPHOTO='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns
 function addPhoto(os,stage,leg,src,by,ts){const ph={id:nPh++,stage,leg,src,ts:ts||now(),by};os.photos.push(ph);idbPut(ph.id,src);return ph}
 const rep=(k,v)=>idb&&k==='src'&&typeof v==='string'&&v.startsWith('data:image/jpeg')?'@':v;
 let remoteSaveTimer=null,remoteSaveBusy=false,remoteSaveAgain=false,remoteLoadDone=false;
-function snapshotForCloud(){return {v:2,CARS,OSL:OSL.map(o=>({...o,photos:(o.photos||[]).map(p=>({...p,src:undefined,cloud_pending:true}))})),NOTIFS,ESTOQUE,FIN,TODO,POSTS,IDEIAS,SENHAS,c:{nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo,nPost,nIdeia}}}
+function snapshotForCloud(){return {v:2,CLIENTS,CARS,OSL:OSL.map(o=>({...o,photos:(o.photos||[]).map(p=>({...p,src:undefined,cloud_pending:true}))})),NOTIFS,ESTOQUE,FIN,TODO,POSTS,IDEIAS,SENHAS,c:{nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo,nPost,nIdeia}}}
 function scheduleCloudSave(){if(!state.user?.authId||!remoteLoadDone)return;if(remoteSaveTimer)clearTimeout(remoteSaveTimer);remoteSaveTimer=setTimeout(async()=>{if(remoteSaveBusy){remoteSaveAgain=true;return}remoteSaveBusy=true;try{const {error}=await sb.from('ambrozio_app_state').upsert({id:'main',payload:snapshotForCloud(),updated_by:state.user.authId,updated_at:new Date().toISOString()},{onConflict:'id'});if(error)throw error}catch(e){console.error('Cloud save:',e);toast('Falha na sincronização Supabase. Confira o SQL/RLS.')}finally{remoteSaveBusy=false;if(remoteSaveAgain){remoteSaveAgain=false;scheduleCloudSave()}}},700)}
-function save(){try{localStorage.setItem(SKEY,JSON.stringify({v:2,CARS,OSL,NOTIFS,ESTOQUE,FIN,TODO,POSTS,IDEIAS,SENHAS,c:{nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo,nPost,nIdeia}},rep));scheduleCloudSave()}catch(e){if(!saveWarned){saveWarned=true;setTimeout(()=>toast('Não deu para salvar neste aparelho (memória cheia ou bloqueada).'),50)}}}
-async function loadCloudState(){try{const {data,error}=await sb.from('ambrozio_app_state').select('payload').eq('id','main').maybeSingle();if(error)throw error;if(data?.payload){const d=data.payload;if(d&&d.v===2){CARS=d.CARS||[];OSL=d.OSL||[];NOTIFS=d.NOTIFS||[];ESTOQUE=d.ESTOQUE||[];FIN=d.FIN||[];TODO=d.TODO||[];POSTS=d.POSTS||[];IDEIAS=d.IDEIAS||[];SENHAS=d.SENHAS||{};const c=d.c||{};nextCar=c.nextCar||1;nTask=c.nTask||1;nOS=c.nOS||412;nProb=c.nProb||1;nPh=c.nPh||1;nNot=c.nNot||1;nItem=c.nItem||1;nTodo=c.nTodo||1;nPost=c.nPost||1;nIdeia=c.nIdeia||1}}remoteLoadDone=true;return true}catch(e){console.error('Cloud load:',e);toast('Não foi possível carregar dados Supabase; confira SQL/RLS.');return false}}
+function save(){try{localStorage.setItem(SKEY,JSON.stringify({v:2,CLIENTS,CARS,OSL,NOTIFS,ESTOQUE,FIN,TODO,POSTS,IDEIAS,SENHAS,c:{nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo,nPost,nIdeia}},rep));scheduleCloudSave()}catch(e){if(!saveWarned){saveWarned=true;setTimeout(()=>toast('Não deu para salvar neste aparelho (memória cheia ou bloqueada).'),50)}}}
+async function loadCloudState(){try{const {data,error}=await sb.from('ambrozio_app_state').select('payload').eq('id','main').maybeSingle();if(error)throw error;if(data?.payload){const d=data.payload;if(d&&d.v===2){CLIENTS=d.CLIENTS||[];CARS=d.CARS||[];OSL=d.OSL||[];NOTIFS=d.NOTIFS||[];ESTOQUE=d.ESTOQUE||[];FIN=d.FIN||[];TODO=d.TODO||[];POSTS=d.POSTS||[];IDEIAS=d.IDEIAS||[];SENHAS=d.SENHAS||{};const c=d.c||{};nextCar=c.nextCar||1;nTask=c.nTask||1;nOS=c.nOS||412;nProb=c.nProb||1;nPh=c.nPh||1;nNot=c.nNot||1;nItem=c.nItem||1;nTodo=c.nTodo||1;nPost=c.nPost||1;nIdeia=c.nIdeia||1}}remoteLoadDone=true;return true}catch(e){console.error('Cloud load:',e);toast('Não foi possível carregar dados Supabase; confira SQL/RLS.');return false}}
 function load(){try{const r=localStorage.getItem(SKEY);if(!r)return false;const d=JSON.parse(r);if(!d||d.v!==2)return false;
-  CARS=d.CARS;OSL=d.OSL;NOTIFS=d.NOTIFS||[];ESTOQUE=d.ESTOQUE||ESTOQUE;FIN=d.FIN||FIN;TODO=d.TODO||[];POSTS=d.POSTS||[];IDEIAS=d.IDEIAS||[];SENHAS=d.SENHAS||{};({nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo}=d.c);nPost=d.c.nPost||1;nIdeia=d.c.nIdeia||1;return true}catch(e){return false}}
+  CLIENTS=d.CLIENTS||[];CARS=d.CARS;OSL=d.OSL;NOTIFS=d.NOTIFS||[];ESTOQUE=d.ESTOQUE||ESTOQUE;FIN=d.FIN||FIN;TODO=d.TODO||[];POSTS=d.POSTS||[];IDEIAS=d.IDEIAS||[];SENHAS=d.SENHAS||{};({nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo}=d.c);nPost=d.c.nPost||1;nIdeia=d.c.nIdeia||1;return true}catch(e){return false}}
 
 const state={user:null,view:'agenda',filtro:'todos',osFiltro:'abertas',finFiltro:'todos',estFiltro:'todos',todoDay:null,mktWeek:null};
 const DRAFT={photos:[]};
@@ -652,12 +652,12 @@ function loginHtml(){
 }
 
 /* ---------- estrutura ---------- */
-const NAVL=adm=>({agenda:adm?'Agenda da oficina':'Minha agenda',alex:'Minha agenda',mkt:'Marketing',os:'Ordens de serviço',patio:'Pátio',estoque:'Estoque e EPI',fin:'Financeiro',equipe:'Equipe'});
+const NAVL=adm=>({agenda:adm?'Agenda da oficina':'Minha agenda',alex:'Minha agenda',mkt:'Marketing',os:'Ordens de serviço',patio:'Pátio',estoque:'Estoque e EPI',fin:'Financeiro',equipe:'Equipe',clientes:'Clientes e empresas'});
 function appHtml(){
   const u=state.user,adm=isAdmin(u),L2=NAVL(adm);
   const hoje=new Date(now()).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const unread=NOTIFS.filter(n=>!n.lida).length,sino=NOTIF_PARA.includes(u.id);
-  const views={agenda:()=>adm?viewAgenda():viewMine(),alex:viewAlex,mkt:viewMkt,os:viewOS,patio:viewPatio,estoque:viewEstoque,fin:viewFin,equipe:viewEquipe};
+  const views={agenda:()=>adm?viewAgenda():viewMine(),alex:viewAlex,mkt:viewMkt,os:viewOS,patio:viewPatio,estoque:viewEstoque,fin:viewFin,equipe:viewEquipe,clientes:viewClientes};
   return `<header class="top">${wordmark()}<span class="date">${hoje}</span>
     ${adm?`<div class="search" role="search">${IC.search}<input id="q" type="search" placeholder="Buscar placa ou carro" autocomplete="off" aria-label="Buscar placa ou carro"><div id="qres" class="qres" hidden></div></div>`:'<span style="margin-right:auto"></span>'}
     ${sino?`<button class="btn bell" data-act="notifs" aria-label="Notificações${unread?', '+unread+' novas':''}">${IC.bell}${unread?`<span class="badge">${unread}</span>`:''}</button>`:''}
@@ -890,7 +890,7 @@ function osDetail(id,keep){
   const entTxt=c.entrega===TK()?`Entregar hoje${c.hora?' às '+c.hora:''}`:'';
   openModal(`<div class="oshead"><div><h2>${esc(cn(c))} ${plateH(c)}</h2><p>${os.num}${c.cliente?' · '+esc(c.cliente):''}${c.ent?' · entrada '+c.ent:''}${entTxt?' · <strong class="warn">'+entTxt+'</strong>':''}</p>
       ${adm?`<div class="headbtns"><button class="btn sm" data-act="editcar" data-car="${c.id}" data-os="${os.id}">${c.placa?'Editar dados do carro':'Cadastrar placa'}</button>${c.st!=='entregue'?`<button class="btn sm" data-act="entrega" data-car="${c.id}" data-os="${os.id}">${entTxt?'Alterar entrega':'Marcar entrega para hoje'}</button>`:''}${c.st==='pronto'?`<button class="btn sm red" data-act="carout" data-car="${c.id}" data-os="${os.id}">Registrar entrega</button>`:''}</div>`:''}</div>
-      <button class="btn sm" data-act="reportos" data-os="${os.id}">PDF completo para cliente</button><button class="btn sm ghost" data-act="close">Fechar</button></div>
+      <button class="btn sm" data-act="editos" data-os="${os.id}">Editar OS</button><button class="btn sm" data-act="reportos" data-os="${os.id}">PDF completo para cliente</button><button class="btn sm ghost" data-act="close">Fechar</button></div>
     ${os.service||os.parts?`<div class="banner"><div><strong>Serviço:</strong> ${esc(os.service||'Não informado')}<br><strong>Peças:</strong> ${esc(os.parts||'Não informado')}</div></div>`:''}
     ${probs}${carbar}${bars}
     <div class="subh">Fotos do recebimento (${os.photos.filter(p=>p.stage==='in').length})</div>${figs(os,os.photos.filter(p=>p.stage==='in'))}
@@ -924,9 +924,11 @@ function reportPDF(days,osId){
     article{page-break-after:always;margin-bottom:24px}table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #bbb;padding:6px;text-align:left;vertical-align:top}th{background:#eee}
     .photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.photos figure{margin:0;break-inside:avoid}.photos img{width:100%;height:150px;object-fit:contain;border:1px solid #ddd}.photos figcaption{font-size:10px;margin-top:4px}
     .head{display:flex;justify-content:space-between;border-bottom:2px solid #222;padding-bottom:10px;margin-bottom:18px}@media print{button{display:none}body{margin:10mm}}
-  </style></head><body><div class="head"><div><h1>AMBROZIO CAR</h1><b>${title}</b></div><small>Gerado em ${generated}</small></div>${detail||'<p>Nenhuma O.S. com atividade concluída no período.</p>'}<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script></body></html>`);
+  </style></head><body><div class="head"><div><h1>AMBROZIO CAR</h1><b>${title}</b><p>CNPJ 46.855.472/0001-27 · Rua Benedito Novo, 198 · CEP 89810-060<br>WhatsApp (49) 98920-3862 · ambroziocar@gmail.com</p></div><small>Gerado em ${generated}</small></div>${detail||'<p>Nenhuma O.S. com atividade concluída no período.</p>'}<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script></body></html>`);
   w.document.close();
 }
+function editOSForm(id){const o=getOS(id),c=car(o.car);if(!o)return;openModal(`<h2>Editar ordem de serviço ${esc(o.num)}</h2><form id="f-editos" data-os="${o.id}" style="display:flex;flex-direction:column;gap:12px"><div class="banner"><strong>${esc(cn(c))} ${esc(c.placa||'')}</strong></div><label>Empresa / cliente pagador<select id="eo-client"><option value="">Sem vínculo</option>${CLIENTS.map(x=>`<option value="${x.id}" ${+o.clientId===x.id?'selected':''}>${esc(x.nome)}${x.doc?' · '+esc(x.doc):''}</option>`).join('')}</select></label><label>Serviços solicitados<textarea id="eo-service" rows="3">${esc(o.service||'')}</textarea></label><label>Peças / materiais<textarea id="eo-parts" rows="3">${esc(o.parts||'')}</textarea></label><div class="actions"><button type="button" class="btn" data-act="backos" data-os="${o.id}">Cancelar</button><button class="btn red" type="submit">Salvar alterações</button></div></form>`,true)}
+function companyMonthlyPDF(){const month=prompt('Informe o mês do relatório no formato AAAA-MM',new Date(now()).toISOString().slice(0,7));if(!month||!/^\d{4}-\d{2}$/.test(month))return;const groups=CLIENTS.map(cl=>{const rows=OSL.filter(o=>+o.clientId===cl.id&&String(o.created||'').slice(0,7)===month);if(!rows.length)return '';const total=rows.length;return `<section><h2>${esc(cl.nome)} ${cl.doc?'· '+esc(cl.doc):''}</h2><p>Contato: ${esc(cl.contato||'—')} · ${esc(cl.email||'—')}</p><table><thead><tr><th>OS</th><th>Veículo</th><th>Placa</th><th>Serviço</th><th>Situação</th></tr></thead><tbody>${rows.map(o=>{const c=car(o.car)||{};return `<tr><td>${esc(o.num)}</td><td>${esc(c.modelo||'')}</td><td>${esc(c.placa||'')}</td><td>${esc(o.service||'—')}</td><td>${isDone(o)?'Finalizada':'Em andamento'}</td></tr>`}).join('')}</tbody></table><p><b>Total de ordens no mês: ${total}</b></p></section>`}).join('');const w=window.open('','_blank');if(!w){toast('Permita pop-ups para gerar o PDF.');return;}w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Ambrozio Car · Relatório mensal ${month}</title><style>body{font:12px Arial;color:#202124;margin:24px}header{background:#111;color:white;padding:16px;border-bottom:5px solid #e11d2e}h1{margin:0}h2{border-bottom:2px solid #e11d2e;padding-bottom:6px}table{width:100%;border-collapse:collapse;margin:12px 0}td,th{border:1px solid #bbb;padding:6px;text-align:left}th{background:#eee}section{page-break-inside:avoid;margin-bottom:24px}.company{font-size:11px}@media print{body{margin:10mm}}</style></head><body><header><h1>AMBROZIO CAR</h1><div class="company">CNPJ 46.855.472/0001-27 · Rua Benedito Novo, 198 · CEP 89810-060<br>WhatsApp (49) 98920-3862 · ambroziocar@gmail.com</div><h2 style="border:0">Relatório mensal por empresa · ${month}</h2></header>${groups||'<p>Nenhuma OS vinculada a clientes cadastrados neste mês.</p>'}<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script></body></html>`);w.document.close()}
 /* ---------- pátio ---------- */
 function viewPatio(){
   const dentro=CARS.filter(c=>c.st!=='entregue');
@@ -982,6 +984,15 @@ function viewFin(){
     <div class="tablewrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Setor / tipo</th><th class="r">Valor</th><th>Situação</th><th class="r"></th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
+/* ---------- clientes e empresas ---------- */
+function viewClientes(){
+ const q=norm(state.clientQuery||'');
+ const list=CLIENTS.filter(c=>!q||norm(c.nome+' '+c.doc+' '+c.contato).includes(q));
+ const rows=list.map(c=>{const cars=CARS.filter(x=>x.clientId===c.id||norm(x.cliente)===norm(c.nome));const os=CARS.flatMap(x=>OSL.filter(o=>o.car===x.id));return `<tr><td><strong>${esc(c.nome)}</strong><div class="note">${esc(c.tipo||'Pessoa/empresa')}</div></td><td>${esc(c.doc||'—')}</td><td>${esc(c.contato||'—')}<div class="note">${esc(c.email||'')}</div></td><td class="num">${cars.length}</td><td class="num">${os.length}</td><td class="r"><button class="btn sm" data-act="clientedit" data-id="${c.id}">Editar</button> <button class="btn sm ghost" data-act="clientdel" data-id="${c.id}">Excluir</button></td></tr>`}).join('');
+ const monthly=OSL.filter(o=>{const d=o.created||o.data||o.ent;return d&&String(d).slice(0,7)===new Date(now()).toISOString().slice(0,7)});
+ return `<div class="pagehead"><div><h1>Clientes e empresas</h1><p>Cadastro central para relacionar clientes, frotas e ordens de serviço.</p></div><button class="btn sm" data-act="companyreport">Relatório mensal por empresa · PDF</button><button class="btn red" data-act="clientnew">+ Novo cliente</button></div><div class="stats">${stat('Clientes cadastrados',CLIENTS.length,'')}${stat('Veículos cadastrados',CARS.length,'')}${stat('Ordens de serviço',OSL.length,'')}${stat('OS no mês',monthly.length,'')}</div><label class="search" style="max-width:420px;margin:14px 0"><input id="client-search" type="search" placeholder="Buscar nome, CNPJ/CPF ou contato" value="${esc(state.clientQuery||'')}"></label><div class="tablewrap"><table><thead><tr><th>Cliente / empresa</th><th>CPF / CNPJ</th><th>Contato</th><th>Veículos</th><th>OS vinculadas</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="empty">Nenhum cliente cadastrado. Use “Novo cliente” para começar.</td></tr>'}</tbody></table></div><p class="note" style="margin-top:12px">Os dados cadastrados são salvos no estado do sistema e sincronizados conforme a configuração atual do Supabase.</p>`;
+}
+function clientForm(id){const c=CLIENTS.find(x=>x.id===+id)||{};openModal(`<h2>${c.id?'Editar cliente':'Novo cliente ou empresa'}</h2><form id="f-client" data-id="${c.id||''}" style="display:flex;flex-direction:column;gap:12px"><label>Nome / razão social<input id="cl-nome" required value="${esc(c.nome||'')}" placeholder="Nome do cliente ou empresa"></label><div class="two"><label>Tipo<select id="cl-tipo"><option ${c.tipo==='Empresa'?'selected':''}>Empresa</option><option ${c.tipo==='Pessoa física'?'selected':''}>Pessoa física</option></select></label><label>CPF / CNPJ<input id="cl-doc" value="${esc(c.doc||'')}" placeholder="Documento"></label></div><div class="two"><label>Telefone / WhatsApp<input id="cl-contato" value="${esc(c.contato||'')}" placeholder="Telefone"></label><label>E-mail<input id="cl-email" type="email" value="${esc(c.email||'')}" placeholder="E-mail"></label></div><label>Endereço<input id="cl-end" value="${esc(c.end||'')}" placeholder="Endereço completo"></label><div class="actions"><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn red" type="submit">Salvar cliente</button></div></form>`,true);}
 /* ---------- equipe ---------- */
 function viewEquipe(){
   const acesso=u=>u.papel==='dono'?'Tudo, com financeiro, agenda pessoal e notificações':u.papel==='gestor'?'Agenda, ordens de serviço, pátio e estoque':u.papel==='estoque'?'Estoque e EPI':u.faz.length>1?'Todas as etapas das ordens de serviço'+(u.mkt?' e marketing':''):'Etapa de '+SETORES[u.faz[0]].nome;
@@ -1014,7 +1025,7 @@ function osForm(carId,placa){
     <label>Responsável<select id="o-e-${k}"><option value="">Qualquer do setor</option>${USERS.filter(x=>x.faz.includes(k)).map(x=>`<option value="${x.id}" ${DEF_EMP[k]===x.id?'selected':''}>${esc(x.nome)}</option>`).join('')}</select></label></div>`).join('');
   openModal(`<h2>${c?'Criar ordem de serviço':'Registrar entrada'}</h2><form id="f-os" data-car="${c?c.id:''}" style="display:flex;flex-direction:column;gap:12px">
     ${dados}
-    <div class="two"><label>Serviço<textarea id="o-service" rows="2" placeholder="Descreva os serviços solicitados"></textarea></label><label>Peças<textarea id="o-parts" rows="2" placeholder="Peças utilizadas ou necessárias"></textarea></label></div>
+    <div class="two"><label>Serviço<textarea id="o-service" rows="2" placeholder="Descreva os serviços solicitados"></textarea></label><label>Peças<textarea id="o-parts" rows="2" placeholder="Peças utilizadas ou necessárias"></textarea></label></div><label>Empresa / cliente responsável pelo pagamento<select id="o-client"><option value="">Selecionar cliente ou empresa…</option>${CLIENTS.map(x=>`<option value="${x.id}">${esc(x.nome)}${x.doc?" · "+esc(x.doc):""}</option>`).join("")}</select></label>
     <div><div class="subh" style="margin-bottom:6px">Fotos do recebimento · mínimo de 3</div>${picker()}</div>
     <div class="subh">Setores por onde o carro vai passar</div><p class="note">Desmarque o setor que não vai trabalhar neste carro. A OS anda junto com o carro: Funilaria, Preparação, Pintura, Montagem e Polimento.</p>
     ${blocos}
@@ -1158,6 +1169,11 @@ document.addEventListener('click',async e=>{
   else if(a==='finf'){state.finFiltro=d.f;render();}
   else if(a==='estf'){state.estFiltro=d.f;render();}
   else if(a==='newos'){if(qr)qr.hidden=true;osForm(d.car,d.placa);}
+  else if(a==='companyreport'){companyMonthlyPDF();}
+  else if(a==='editos'){editOSForm(d.os);}
+  else if(a==='clientnew'){clientForm();}
+  else if(a==='clientedit'){clientForm(d.id);}
+  else if(a==='clientdel'){if(t.dataset.ok){CLIENTS=CLIENTS.filter(c=>c.id!==+d.id);render();toast('Cliente excluído');}else{t.dataset.ok='1';t.textContent='Confirmar';}}
   else if(a==='newitem'){itemForm();}
   else if(a==='pwd'){pwdForm();}
   else if(a==='pwdreset'){pwdResetForm(d.u);}
@@ -1216,6 +1232,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.id==='q'){e.preventDefault();const b=$('#qres .qr');if(b)b.click();return;}
   if(e.key!=='Escape')return;if(!$('#ov2').hidden)$('#ov2').hidden=true;else if(!$('#ov').hidden)closeModal();else{const q=$('#qres');if(q)q.hidden=true;}});
 document.addEventListener('input',e=>{const t=e.target;
+  if(t.id==='client-search'){state.clientQuery=t.value;const pos=t.selectionStart;render();const inp=$('#client-search');if(inp){inp.focus();inp.setSelectionRange(pos,pos);}return;}
   if(t.id==='q'){const r=$('#qres');const v=t.value.trim();if(!v){r.hidden=true;return;}r.innerHTML=qresHtml(v);r.hidden=false;}
   else if(t.id==='as-q'){$('#as-res').innerHTML=asList(t.value.trim());}
   else if(t.id==='c-placa'){$('#c-found').innerHTML=foundHtml(t.value);}
@@ -1309,7 +1326,7 @@ else if(id==='f-os'){
       else{c={id:nextCar++,placa:pl,modelo:$('#c-modelo').value.trim(),cor:$('#c-cor').value.trim(),cliente:$('#c-cli').value.trim(),st:'servico',ent:dm(now()),prev:'',entrega:null,hora:'',entOrd:0};CARS.push(c);}}
     c.st='servico';c.entrega=c.entrega===TK()?c.entrega:null;
     const t=now();
-    const os=mkOS(c.id,stages,[]);os.service=$('#o-service').value.trim();os.parts=$('#o-parts').value.trim();DRAFT.photos.forEach(src=>addPhoto(os,'in','Recebimento',src,state.user.id,t));
+    const os=mkOS(c.id,stages,[]);os.created=new Date(t).toISOString();os.service=$('#o-service').value.trim();os.parts=$('#o-parts').value.trim();os.clientId=+$('#o-client').value||null;DRAFT.photos.forEach(src=>addPhoto(os,'in','Recebimento',src,state.user.id,t));
     OSL.push(os);if($('#o-meta').checked)os.stages[first].meta=TK();toEnd(os,first);
     closeModal();render();toast(`${os.num} criada para ${cn(c)} · está na ${SETORES[first].nome}`);
   }else if(id==='f-car'){
@@ -1321,7 +1338,9 @@ else if(id==='f-os'){
     const c=car(f.dataset.car||$('#e-car').value);if(!c){closeModal();return;}
     if(c.entrega!==TK())c.entOrd=Math.max(0,...entregasHoje().map(x=>x.entOrd))+1;
     c.entrega=TK();c.hora=$('#e-hora').value;render();toast(`${cn(c)} na lista de entregas de hoje`);if(f.dataset.os)osDetail(f.dataset.os);else closeModal();
-  }else if(id==='f-post'){
+  }else if(id==='f-editos'){const o=getOS(f.dataset.os);if(o){o.clientId=+$('#eo-client').value||null;o.service=$('#eo-service').value.trim();o.parts=$('#eo-parts').value.trim();closeModal();render();toast('Ordem de serviço atualizada');osDetail(o.id);}
+  }else if(id==='f-client'){const v={nome:$('#cl-nome').value.trim(),tipo:$('#cl-tipo').value,doc:$('#cl-doc').value.trim(),contato:$('#cl-contato').value.trim(),email:$('#cl-email').value.trim(),end:$('#cl-end').value.trim()};if(!v.nome)return;if(f.dataset.id){Object.assign(CLIENTS.find(x=>x.id===+f.dataset.id),v);}else{CLIENTS.push({...v,id:Date.now()});}closeModal();render();toast('Cliente salvo');
+  }else if(id==='f-post'){ 
     const v={dia:$('#m-dia').value,hora:$('#m-hora').value,formato:$('#m-fmt').value,titulo:$('#m-tit').value.trim(),texto:$('#m-txt').value.trim(),status:$('#m-st').value,car:$('#m-car').value?+$('#m-car').value:''};
     if(!v.dia||!v.titulo)return;
     if(f.dataset.id)Object.assign(POSTS.find(x=>x.id===+f.dataset.id),v);else POSTS.push(Object.assign({id:nPost++},v));

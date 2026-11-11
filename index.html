@@ -1332,72 +1332,95 @@ const navFor=u=>{
   document.addEventListener('submit',async e=>{
     e.preventDefault();const f=e.target,id=f.id;
     
-  if(id==='f-login'){
-      const username=norm($('#l-user').value);
-      const password=$('#l-pass').value;
   
-      const loginMap={
-    alex:'ambroziocar@gmail.com',
-    lukas:'lukas.esteres.abreu@gmail.com'
-};
-const email = loginMap[username] || (
-    username.includes('@') ? username.trim().toLowerCase() : null
-);
-  
-      if(!email){
-          $('#l-err').textContent='Usuário não encontrado.';
-          return;
-      }
-  
-      const {data,error}=await sb.auth.signInWithPassword({
-          email:email,
-          password:password
-      });
-  
-      if(error){
-          $('#l-err').textContent='Usuário ou senha incorretos. Confira e tente de novo.';
-          return;
-      }
-  
-      const {data:profile,error:profileError}=await sb
-          .from('profiles')
-          .select('id,nome,papel,ativo')
-          .eq('id',data.user.id)
-          .single();
-  
-      if(profileError||!profile||!profile.ativo){
-          await sb.auth.signOut();
-          $('#l-err').textContent='Perfil não encontrado ou usuário inativo.';
-          return;
-      }
-  
-      const u=USERS.find(x=>x.usuario===username) || {
-    id: profile.id,
-    nome: profile.nome,
-    curto: profile.nome.split(' ')[0],
-    papel: profile.papel,
-    rotulo: profile.papel === 'gestor'
-        ? 'Gestor'
-        : profile.papel === 'estoque'
-        ? 'Estoque'
-        : 'Funcionário',
-    usuario: profile.usuario,
-    faz: [],
-    cor: 'var(--silver)'
-};
-  
-      state.user={
-          ...u,
-          nome:profile.nome,
-          authId:profile.id,
-          papel:profile.papel
-      };
-  
-      state.view=navFor(state.user)[0];
-      await loadCloudState();
-      render();
-      return;
-  }
+if(id==='f-login'){
+    const username=norm($('#l-user').value);
+    const password=$('#l-pass').value;
+
+    const loginMap={
+        alex:'ambroziocar@gmail.com',
+        lukas:'lukas.esteres.abreu@gmail.com'
+    };
+
+    let userId=null;
+
+    // Alex e Lucas continuam com o login atual.
+    // Novos funcionários entram pelo nome de usuário.
+    if(loginMap[username] || username.includes('@')){
+        const email=loginMap[username] || username.trim().toLowerCase();
+
+        const {data,error}=await sb.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if(error){
+            $('#l-err').textContent='Usuário ou senha incorretos.';
+            return;
+        }
+
+        userId=data.user.id;
+
+    }else{
+        const {data,error}=await sb.functions.invoke(
+            'login-with-username',
+            {body:{usuario:username,password}}
+        );
+
+        if(error || !data?.success || !data?.session){
+            $('#l-err').textContent=data?.error || error?.message || 'Usuário ou senha incorretos.';
+            return;
+        }
+
+        const {data:sessionData,error:sessionError}=await sb.auth.setSession(data.session);
+
+        if(sessionError || !sessionData.user){
+            $('#l-err').textContent='Não foi possível iniciar a sessão.';
+            return;
+        }
+
+        userId=sessionData.user.id;
+    }
+
+    const {data:profile,error:profileError}=await sb
+        .from('profiles')
+        .select('id,nome,usuario,papel,ativo')
+        .eq('id',userId)
+        .single();
+
+    if(profileError || !profile || !profile.ativo){
+        await sb.auth.signOut();
+        $('#l-err').textContent='Perfil não encontrado ou usuário inativo.';
+        return;
+    }
+
+    const u=USERS.find(x=>x.usuario===username) || {
+        id:profile.id,
+        nome:profile.nome,
+        curto:profile.nome.split(' ')[0],
+        papel:profile.papel,
+        rotulo:profile.papel==='gestor'
+            ? 'Gestor'
+            : profile.papel==='estoque'
+            ? 'Estoque'
+            : 'Funcionário',
+        usuario:profile.usuario || username,
+        faz:[],
+        cor:'var(--silver)'
+    };
+
+    state.user={
+        ...u,
+        nome:profile.nome,
+        authId:profile.id,
+        papel:profile.papel
+    };
+
+    state.view=navFor(state.user)[0];
+    await loadCloudState();
+    render();
+    return;
+}
 
 else if(id==='f-employee'){
     const nome=$('#emp-nome').value.trim();

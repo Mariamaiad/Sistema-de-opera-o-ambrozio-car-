@@ -1420,10 +1420,18 @@ else if(id==='f-employee'){
         }
     );
 
-    if(error){
-        erro.textContent=error.message||'Erro ao cadastrar funcionário.';
-        return;
-    }
+  
+if(error){
+    let detalhe=error.message || 'Erro ao cadastrar funcionário.';
+
+    try{
+        const resposta=await error.context.json();
+        detalhe=resposta.error || detalhe;
+    }catch(e){}
+
+    erro.textContent=detalhe;
+    return;
+}
 
     if(!data?.success){
         erro.textContent=data?.error||'Não foi possível cadastrar.';

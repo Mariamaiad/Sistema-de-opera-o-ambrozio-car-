@@ -126,6 +126,80 @@
   /* detalhe da OS */
   .oshead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
   .oshead p{margin:2px 0 0;color:var(--muted);font-size:13px}
+  /* Organização visual da ordem de serviço */
+
+.oshead h2{
+  font-size:24px;
+  line-height:1.2;
+  margin:0 0 6px;
+}
+
+.oshead p{
+  line-height:1.6;
+  overflow-wrap:anywhere;
+}
+
+.modal .banner{
+  width:100%;
+  box-sizing:border-box;
+  align-items:flex-start;
+  line-height:1.5;
+}
+
+.modal .subh{
+  margin-top:18px;
+  margin-bottom:8px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--line);
+}
+
+.modal .stagebox{
+  width:100%;
+  box-sizing:border-box;
+  margin-top:12px;
+}
+
+.modal .actionbar .act{
+  justify-content:flex-end;
+}
+
+.modal .thumbs{
+  width:100%;
+}
+
+.modal .oshead .btn{
+  min-height:38px;
+  padding:8px 12px;
+  white-space:nowrap;
+}
+
+.modal select{
+  max-width:100%;
+}
+
+@media(max-width:560px){
+  .modal{
+    padding:14px;
+    gap:12px;
+  }
+
+  .oshead h2{
+    font-size:20px;
+  }
+
+  .oshead .headbtns,
+  .oshead > div:last-child{
+    width:100%;
+  }
+
+  .oshead .btn{
+    flex:1;
+  }
+
+  .kv{
+    grid-template-columns:1fr;
+  }
+}
   .subh{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin:4px 0 0}
   .stagebox{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--surface2)}
   .stagebox.mine{box-shadow:0 0 0 1px var(--c)}
@@ -190,6 +264,91 @@
   .meter{height:6px;border-radius:3px;background:var(--line);overflow:hidden;min-width:90px}
   .meter i{display:block;height:100%;background:var(--green)}
   .meter.warn i{background:var(--amber)}.meter.crit i{background:#ff5b62}
+
+/* NOVO VISUAL — ESTOQUE E EPI */
+.estoque-table table{
+  min-width:900px;
+}
+
+.estoque-table th{
+  padding:15px 16px;
+  font-size:11px;
+  letter-spacing:.09em;
+}
+
+.estoque-table td{
+  padding:16px;
+}
+
+.estoque-table tbody tr:hover{
+  background:var(--surface2);
+}
+
+.estoque-table .item-name{
+  font-size:15px;
+  font-weight:700;
+}
+
+.estoque-table .item-type{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.estoque-table .stock-min{
+  color:var(--muted);
+  font-variant-numeric:tabular-nums;
+}
+
+.estoque-table .stock-level{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  min-width:110px;
+}
+
+.estoque-table .meter{
+  width:100%;
+  height:8px;
+}
+
+.estoque-table .stock-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:7px;
+  flex-wrap:wrap;
+}
+
+.estoque-table .qty{
+  justify-content:center;
+  gap:9px;
+}
+
+.estoque-table .qty button{
+  width:34px;
+  height:34px;
+  font-size:17px;
+}
+
+.estoque-table .qty strong{
+  font-size:16px;
+  min-width:28px;
+}
+
+.estoque-table .actions-cell{
+  min-width:180px;
+}
+
+.estoque-table .btn{
+  min-height:32px;
+}
+
+@media(max-width:560px){
+  .estoque-table td{
+    padding:12px;
+  }
+}
+
   
   /* financeiro */
   .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
@@ -236,8 +395,52 @@
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:grid;place-items:center;z-index:50;
     padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
   #ov2{z-index:70}
-  .modal{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--red);border-radius:12px;width:min(520px,100%);max-height:100%;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:14px}
-  .modal.wide{width:min(840px,100%)}
+  .modal{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-top:3px solid var(--red);
+  border-radius:14px;
+  width:min(520px,100%);
+  max-height:calc(100dvh - 32px);
+  box-sizing:border-box;
+  min-width:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.modal.wide{
+  width:min(960px,100%);
+  min-width:0;
+}
+
+.oshead{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+
+.oshead > div:first-child{
+  flex:1 1 100%;
+  min-width:0;
+}
+
+.oshead .headbtns{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+
+.oshead .btn{
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
   .modal h2{font-family:var(--display);font-style:italic;font-weight:800;font-size:22px}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px}
@@ -429,21 +632,32 @@
    {id:'aniela',nome:'Aniela',curto:'Aniela',papel:'estoque',rotulo:'Estoque e EPI',usuario:'aniela',senha:'aniela123',faz:[],cor:'var(--silver)'}
   ];
  
-const PERM={
-  dono:['agenda','alex','mkt','os','patio','estoque','fin','equipe','clientes'],
+  const PERM={
+    dono:['agenda','alex','mkt','os','patio','estoque','fin','equipe','clientes','fotos'],
   gestor:['agenda','os','patio','estoque','clientes'],
-  estoque:['estoque'],
+  estoque:['estoque','fotos'],
   func:['agenda']
 };
 
-  const NOTIF_PARA=['alex'];
- 
+
 const navFor=u=>{
   const papel=u.papel==='funcionario'?'func':u.papel;
+
+  if(u.usuario==='aniela'){
+    return [...PERM.gestor,'fotos'];
+  }
+
   const l=[...(PERM[papel]||PERM.func)];
+
   if(u.mkt&&!l.includes('mkt'))l.push('mkt');
+
   return l;
 };
+
+
+  const NOTIF_PARA=['alex'];
+ 
+
 
   const DEF_EMP={fun:'romario',prep:null,pin:'eder',mont:'anderson',pol:'jubileu'};
   const isAdmin=u=>u.papel==='dono';
@@ -455,7 +669,10 @@ const navFor=u=>{
   const showIn=(u,k)=>u.faz.includes(k)&&(u.faz.length===1||u.base===k);
   
   /* ---------- dados ---------- */
-  let CARS=[],OSL=[],NOTIFS=[],TODO=[],POSTS=[],IDEIAS=[],CLIENTS=[],QUESTIONS=[];let nPost=1,nIdeia=1;let SENHAS={};
+  let CARS=[],OSL=[],NOTIFS=[],TODO=[],POSTS=[],IDEIAS=[],CLIENTS=[],QUESTIONS=[];
+let TEAM=[];
+let nPost=1,nIdeia=1;
+let SENHAS={};
   const senhaDe=u=>SENHAS[u.id]||u.senha;
   let nextCar=1,nTask=1,nOS=412,nProb=1,nPh=1,nNot=1,nItem=19,nTodo=1;
   const car=id=>CARS.find(c=>c.id===+id);
@@ -479,68 +696,30 @@ const navFor=u=>{
     return cc;
   }
   function seedAll(){
-    CARS=[];OSL=[];NOTIFS=[];TODO=[];POSTS=[];IDEIAS=[];nPost=1;nIdeia=1;nextCar=1;nTask=1;nOS=412;nProb=1;nPh=1;nNot=1;nTodo=1;
-    // Funilaria · Romário
-    seedCar({modelo:'Fiat Pulse',cor:'Cinza'},'fun',{fun:['romario',1]});
-    seedCar({modelo:'Renault Fluence',cor:'Branco'},'fun',{fun:['romario',2]});
-    seedCar({modelo:'VW Fusca',cor:'Vermelho'},'fun',{fun:['romario',3]});
-    // Preparação · Lucas e Igor (Creta e Clio também estão na pintura de hoje)
-    seedCar({modelo:'Hyundai Creta',cor:'Preta',cliente:'Ibiza'},'prep',{prep:['lukas',1],pin:['eder',3]});
-    seedCar({modelo:'Chevrolet Onix',cor:'Branco'},'prep',{prep:['lukas',2]});
-    seedCar({modelo:'VW Voyage',cor:'Branco'},'prep',{prep:['lukas',3]});
-    seedCar({modelo:'Renault Clio',cor:'Preto'},'prep',{prep:['igor',1],pin:['eder',4]});
-    seedCar({modelo:'Fiat Fiorino',cor:'Branca'},'prep',{prep:['igor',2]});
-    seedCar({modelo:'Toyota Etios',cor:'Prata',cliente:'Ibiza'},'prep',{prep:['igor',3]});
-    // Pintura · Éder
-    seedCar({modelo:'Fiat Ducato',cor:'Branca'},'pin',{pin:['eder',1,[330,250]]});
-    seedCar({modelo:'Chevrolet Onix',cor:'Branco',cliente:'BNF'},'pin',{pin:['eder',2,[240,150]],mont:['anderson',3]});
-    // Montagem · Anderson
-    seedCar({modelo:'Ford Fiesta',cor:'Vermelho'},'mont',{mont:['anderson',1,[360,300]],pol:['jubileu',1,[290,200]]},'pol',{entrega:TK(),entOrd:2});
-    seedCar({modelo:'Nissan Frontier',cor:'Branca'},'mont',{mont:['anderson',2,[290,210]]},'mont',{st:'entregue',entrega:TK(),entOrd:4,saida:dm(now()),saidaTs:T(120)});
-    seedCar({modelo:'Fiat Uno',cor:'Vermelho'},'mont',{mont:['anderson',4]});
-    seedCar({modelo:'Toyota Hilux',cor:'Branca'},'mont',{mont:['anderson',5]});
-    // Polimento · Jubileu
-    seedCar({modelo:'Renault Master',cor:'Branca'},'pol',{pol:['jubileu',2]});
-    seedCar({modelo:'Honda Civic',cor:'Preto'},'pol',{pol:['jubileu',3,[190,110]]},'pol',{entrega:TK(),entOrd:1});
-    seedCar({modelo:'Chevrolet Onix',cor:'Branco'},'pol',{pol:['jubileu',4,[420,340]]},'pol',{st:'entregue',entrega:TK(),entOrd:3,saida:dm(now()),saidaTs:T(90)});
-    STAGES.forEach(renumber);
-  }
+  CARS=[];
+  OSL=[];
+  NOTIFS=[];
+  TODO=[];
+  POSTS=[];
+  IDEIAS=[];
+  CLIENTS=[];
+  QUESTIONS=[];
+
+  nPost=1;
+  nIdeia=1;
+  nextCar=1;
+  nTask=1;
+  nOS=1;
+  nProb=1;
+  nPh=1;
+  nNot=1;
+  nTodo=1;
+}
   
-  /* estoque e financeiro (exemplo) */
-  let ESTOQUE=[
-   {id:1,cat:'Material',nome:'Tinta base poliuretano',un:'L',qtd:14,min:10},
-   {id:2,cat:'Material',nome:'Verniz PU 2K',un:'L',qtd:6,min:8},
-   {id:3,cat:'Material',nome:'Catalisador',un:'L',qtd:7,min:6},
-   {id:4,cat:'Material',nome:'Primer cinza',un:'L',qtd:9,min:6},
-   {id:5,cat:'Material',nome:'Thinner',un:'L',qtd:11,min:12},
-   {id:6,cat:'Material',nome:'Massa plástica',un:'kg',qtd:22,min:10},
-   {id:7,cat:'Material',nome:'Lixa d’água 400',un:'folhas',qtd:80,min:50},
-   {id:8,cat:'Material',nome:'Lixa d’água 1200',un:'folhas',qtd:18,min:40},
-   {id:9,cat:'Material',nome:'Fita crepe',un:'rolos',qtd:12,min:10},
-   {id:10,cat:'Material',nome:'Composto polidor nº 1',un:'potes',qtd:4,min:3},
-   {id:11,cat:'Material',nome:'Boina de polimento',un:'un',qtd:5,min:6},
-   {id:12,cat:'Material',nome:'Disco de lixa 150 mm',un:'un',qtd:30,min:20},
-   {id:13,cat:'EPI',nome:'Luvas nitrílicas',un:'pares',qtd:30,min:20},
-   {id:14,cat:'EPI',nome:'Respirador semifacial',un:'un',qtd:6,min:4},
-   {id:15,cat:'EPI',nome:'Filtro para respirador',un:'pares',qtd:4,min:6},
-   {id:16,cat:'EPI',nome:'Óculos de proteção',un:'un',qtd:9,min:6},
-   {id:17,cat:'EPI',nome:'Protetor auricular',un:'un',qtd:12,min:10},
-   {id:18,cat:'EPI',nome:'Macacão de pintura',un:'un',qtd:3,min:4}
-  ];
-  let FIN=[
-   {id:1,tipo:'in',data:'15/10',desc:'Honda Civic · Funilaria completa',setor:'fun',valor:4800,pago:true},
-   {id:2,tipo:'in',data:'17/10',desc:'VW Gol · Pintura de para-choque e porta',setor:'pin',valor:2350,pago:true},
-   {id:3,tipo:'in',data:'19/10',desc:'Hyundai HB20 · Pintura de capô',setor:'pin',valor:1650,pago:true},
-   {id:4,tipo:'in',data:'19/10',desc:'Hyundai HB20 · Polimento',setor:'pol',valor:420,pago:true},
-   {id:5,tipo:'in',data:'20/10',desc:'Chevrolet Onix · Funilaria e pintura lateral',setor:'fun',valor:3900,pago:false},
-   {id:6,tipo:'in',data:'21/10',desc:'Toyota Corolla · Cristalização',setor:'pol',valor:780,pago:false},
-   {id:7,tipo:'in',data:'24/10',desc:'Renault Kwid · Pintura de porta',setor:'pin',valor:2100,pago:false},
-   {id:8,tipo:'in',data:'27/10',desc:'Jeep Compass · Funilaria parcial',setor:'fun',valor:5200,pago:false},
-   {id:9,tipo:'out',data:'05/10',desc:'Folha de pagamento',setor:'Pessoal',valor:6800,pago:true},
-   {id:10,tipo:'out',data:'05/10',desc:'Aluguel do galpão',setor:'Fixas',valor:3500,pago:true},
-   {id:11,tipo:'out',data:'10/10',desc:'Energia e água',setor:'Fixas',valor:940,pago:true},
-   {id:12,tipo:'out',data:'12/10',desc:'Compra de tintas e verniz',setor:'Material',valor:3250,pago:true}
-  ];
+
+  /* estoque e financeiro começam vazios */
+let ESTOQUE=[];
+let FIN=[];
   
   /* salvar neste aparelho */
   const SKEY='ambrozio-car-v2';let saveWarned=false;
@@ -551,12 +730,217 @@ const navFor=u=>{
   function idbAll(){return new Promise(res=>{if(!idb)return res({});try{const out={};const rq=idb.transaction('f').objectStore('f').openCursor();rq.onsuccess=()=>{const c=rq.result;if(c){out[c.key]=c.value;c.continue()}else res(out)};rq.onerror=()=>res(out)}catch(e){res({})}})}
   const NOPHOTO='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260"><rect width="400" height="260" fill="#1b1b20"/><text x="200" y="135" font-family="Arial" font-size="16" fill="#9a9ea8" text-anchor="middle">foto não encontrada neste aparelho</text></svg>');
   function addPhoto(os,stage,leg,src,by,ts){const ph={id:nPh++,stage,leg,src,ts:ts||now(),by};os.photos.push(ph);idbPut(ph.id,src);return ph}
+  async function enviarFotoNuvem(file,os,stage,leg,by){
+  const src=await readImg(file);
+  if(!src) throw new Error('Não foi possível processar a imagem.');
+
+  const blob=await (await fetch(src)).blob();
+  const caminho=`${os.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+
+  const {error}=await sb.storage
+    .from('ambrozio-fotos')
+    .upload(caminho,blob,{
+      contentType:'image/jpeg',
+      upsert:false
+    });
+
+  if(error) throw error;
+
+  const {data,error:signedError}=await sb.storage
+    .from('ambrozio-fotos')
+    .createSignedUrl(caminho,604800);
+
+  if(signedError) throw signedError;
+
+  return {
+    id:nPh++,
+    stage,
+    leg,
+    src:data.signedUrl,
+    storage_path:caminho,
+    ts:now(),
+    by
+  };
+}
   const rep=(k,v)=>idb&&k==='src'&&typeof v==='string'&&v.startsWith('data:image/jpeg')?'@':v;
   let remoteSaveTimer=null,remoteSaveBusy=false,remoteSaveAgain=false,remoteLoadDone=false;
-  function snapshotForCloud(){return {v:2,QUESTIONS,CLIENTS,CARS,OSL:OSL.map(o=>({...o,photos:(o.photos||[]).map(p=>({...p,src:undefined,cloud_pending:true}))})),NOTIFS,ESTOQUE,FIN,TODO,POSTS,IDEIAS,QUESTIONS,SENHAS,c:{nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo,nPost,nIdeia}}}
-  function scheduleCloudSave(){if(!state.user?.authId||!remoteLoadDone)return;if(remoteSaveTimer)clearTimeout(remoteSaveTimer);remoteSaveTimer=setTimeout(async()=>{if(remoteSaveBusy){remoteSaveAgain=true;return}remoteSaveBusy=true;try{const {error}=await sb.from('ambrozio_app_state').upsert({id:'main',payload:snapshotForCloud(),updated_by:state.user.authId,updated_at:new Date().toISOString()},{onConflict:'id'});if(error)throw error}catch(e){console.error('Cloud save:',e);toast('Falha na sincronização Supabase. Confira o SQL/RLS.')}finally{remoteSaveBusy=false;if(remoteSaveAgain){remoteSaveAgain=false;scheduleCloudSave()}}},700)}
+  function snapshotForCloud(){
+  return {
+    v:2,
+    cleanInstallV3:true,
+    QUESTIONS,
+    CLIENTS,
+    CARS,
+    OSL:OSL.map(o=>({
+      ...o,
+      photos:(o.photos||[]).map(p=>({
+        ...p,
+        src:undefined,
+        cloud_pending:true
+      }))
+    })),
+    NOTIFS,
+    ESTOQUE,
+    FIN,
+    TODO,
+    POSTS,
+    IDEIAS,
+    SENHAS,
+    c:{
+      nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo,nPost,nIdeia
+    }
+  };
+}
+function scheduleCloudSave(){
+  if(!state.user || !remoteLoadDone) return;
+
+  clearTimeout(remoteSaveTimer);
+
+  remoteSaveTimer=setTimeout(async()=>{
+    if(remoteSaveBusy){
+      remoteSaveAgain=true;
+      return;
+    }
+
+    remoteSaveBusy=true;
+
+    try{
+      const {error}=await sb
+        .from('ambrozio_app_state')
+        .upsert({
+          id:'main',
+          payload:snapshotForCloud(),
+          updated_by:state.user.authId,
+          updated_at:new Date().toISOString()
+        });
+
+      if(error) throw error;
+
+    }catch(e){
+      console.error('Erro ao sincronizar:',e);
+      toast('Erro ao sincronizar com a nuvem.');
+    }finally{
+      remoteSaveBusy=false;
+
+      if(remoteSaveAgain){
+        remoteSaveAgain=false;
+        scheduleCloudSave();
+      }
+    }
+  },700);
+}
   function save(){try{localStorage.setItem(SKEY,JSON.stringify({v:2,QUESTIONS,CLIENTS,CARS,OSL,NOTIFS,ESTOQUE,FIN,TODO,POSTS,IDEIAS,QUESTIONS,SENHAS,c:{nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo,nPost,nIdeia}},rep));scheduleCloudSave()}catch(e){if(!saveWarned){saveWarned=true;setTimeout(()=>toast('Não deu para salvar neste aparelho (memória cheia ou bloqueada).'),50)}}}
-  async function loadCloudState(){try{const {data,error}=await sb.from('ambrozio_app_state').select('payload').eq('id','main').maybeSingle();if(error)throw error;if(data?.payload){const d=data.payload;if(d&&d.v===2){CLIENTS=d.CLIENTS||[];CARS=d.CARS||[];OSL=d.OSL||[];NOTIFS=d.NOTIFS||[];ESTOQUE=d.ESTOQUE||[];FIN=d.FIN||[];TODO=d.TODO||[];POSTS=d.POSTS||[];IDEIAS=d.IDEIAS||[];QUESTIONS=d.QUESTIONS||[];SENHAS=d.SENHAS||{};const c=d.c||{};nextCar=c.nextCar||1;nTask=c.nTask||1;nOS=c.nOS||412;nProb=c.nProb||1;nPh=c.nPh||1;nNot=c.nNot||1;nItem=c.nItem||1;nTodo=c.nTodo||1;nPost=c.nPost||1;nIdeia=c.nIdeia||1}}remoteLoadDone=true;return true}catch(e){console.error('Cloud load:',e);toast('Não foi possível carregar dados Supabase; confira SQL/RLS.');return false}}
+  async function loadCloudState(){
+  try{
+    const {data,error}=await sb
+      .from('ambrozio_app_state')
+      .select('payload')
+      .eq('id','main')
+      .maybeSingle();
+
+    if(error)throw error;
+
+    const d=data?.payload;
+    const {data:profiles,error:profilesError}=await sb
+  .from('profiles')
+  .select('id,nome,usuario,papel,ativo')
+  .eq('ativo',true);
+
+if(profilesError)throw profilesError;
+
+TEAM=(profiles||[]).map(p=>({
+  id:p.id,
+  nome:p.nome,
+  curto:p.nome.split(' ')[0],
+  usuario:p.usuario,
+  papel:p.papel,
+  rotulo:p.papel==='dono'?'Dono':
+    p.papel==='gestor'?'Gestor':
+    p.papel==='estoque'?'Estoque':'Funcionário',
+  faz:[],
+  mkt:false,
+  cor:'var(--silver)'
+}));
+    if(d?.cleanInstallV3===true){
+      CLIENTS=d.CLIENTS||[];
+      CARS=d.CARS||[];
+      OSL=d.OSL||[];
+
+      const fotosLocais=await idbAll();
+
+for(const os of OSL){
+  for(const p of (os.photos||[])){
+    if(p.storage_path){
+      const {data,error}=await sb.storage
+        .from('ambrozio-fotos')
+        .createSignedUrl(p.storage_path,604800);
+
+      p.src=!error ? data.signedUrl : NOPHOTO;
+    }else{
+      p.src=p.src||fotosLocais[p.id]||NOPHOTO;
+    }
+  }
+}
+
+      NOTIFS=d.NOTIFS||[];
+      ESTOQUE=d.ESTOQUE||[];
+      FIN=d.FIN||[];
+      TODO=d.TODO||[];
+      POSTS=d.POSTS||[];
+      IDEIAS=d.IDEIAS||[];
+      QUESTIONS=d.QUESTIONS||[];
+      SENHAS=d.SENHAS||{};
+
+      const c=d.c||{};
+      nextCar=c.nextCar||1;
+      nTask=c.nTask||1;
+      nOS=c.nOS||1;
+      nProb=c.nProb||1;
+      nPh=c.nPh||1;
+      nNot=c.nNot||1;
+      nItem=c.nItem||1;
+      nTodo=c.nTodo||1;
+      nPost=c.nPost||1;
+      nIdeia=c.nIdeia||1;
+    }else{
+      CLIENTS=[];
+      CARS=[];
+      OSL=[];
+      NOTIFS=[];
+      TODO=[];
+      POSTS=[];
+      IDEIAS=[];
+      QUESTIONS=[];
+      ESTOQUE=[];
+      FIN=[];
+
+      nPost=1;
+      nIdeia=1;
+      nextCar=1;
+      nTask=1;
+      nOS=1;
+      nProb=1;
+      nPh=1;
+      nNot=1;
+      nItem=1;
+      nTodo=1;
+
+      SENHAS=d?.SENHAS||{};
+    }
+
+    remoteLoadDone=true;
+
+    if(d?.cleanInstallV3!==true){
+      save();
+    }
+
+    return true;
+  }catch(e){
+    console.error('Cloud load:',e);
+    toast('Não foi possível carregar dados Supabase; confira SQL/RLS.');
+    return false;
+  }
+}
   function load(){try{const r=localStorage.getItem(SKEY);if(!r)return false;const d=JSON.parse(r);if(!d||d.v!==2)return false;
     QUESTIONS=d.QUESTIONS||[];CLIENTS=d.CLIENTS||[];CARS=d.CARS;OSL=d.OSL;NOTIFS=d.NOTIFS||[];ESTOQUE=d.ESTOQUE||ESTOQUE;FIN=d.FIN||FIN;TODO=d.TODO||[];POSTS=d.POSTS||[];IDEIAS=d.IDEIAS||[];QUESTIONS=d.QUESTIONS||[];SENHAS=d.SENHAS||{};({nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo}=d.c);nPost=d.c.nPost||1;nIdeia=d.c.nIdeia||1;return true}catch(e){return false}}
   
@@ -640,7 +1024,8 @@ const navFor=u=>{
    mkt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>',
    clientes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 5a3.5 3.5 0 0 1 0 7M18 14c2.2.6 3.5 2.4 3.5 5"/></svg>',
    bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4"/></svg>',
-   search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>'
+   search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
+fotos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m21 15-5-5L5 19"/></svg>'
   };
   const wordmark=big=>`<span class="wm${big?' big':''}" aria-label="Ambrozio Car"><span class="wm-a">AMBROZIO</span><span class="wm-b">CAR</span></span>`;
   const speed='<div class="speed" aria-hidden="true"><i></i><b></b></div>';
@@ -667,12 +1052,12 @@ const navFor=u=>{
   }
   
   /* ---------- estrutura ---------- */
-  const NAVL=adm=>({agenda:adm?'Agenda da oficina':'Minha agenda',alex:'Minha agenda',mkt:'Marketing',os:'Ordens de serviço',patio:'Pátio',estoque:'Estoque e EPI',fin:'Financeiro',equipe:'Equipe',clientes:'Clientes e empresas'});
+  const NAVL=adm=>({fotos:'Histórico Fotográfico',agenda:adm?'Agenda da oficina':'Minha agenda',alex:'Minha agenda',mkt:'Marketing',os:'Ordens de serviço',patio:'Pátio',estoque:'Estoque e EPI',fin:'Financeiro',equipe:'Equipe',clientes:'Clientes e empresas'});
   function appHtml(){
     const u=state.user,adm=isAdmin(u),L2=NAVL(adm);
     const hoje=new Date(now()).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const unread=NOTIFS.filter(n=>!n.lida).length,sino=NOTIF_PARA.includes(u.id);
-    const views={agenda:()=>adm?viewAgenda():viewMine(),alex:viewAlex,mkt:viewMkt,os:viewOS,patio:viewPatio,estoque:viewEstoque,fin:viewFin,equipe:viewEquipe,clientes:viewClientes};
+    const views={agenda:()=>adm?viewAgenda():viewMine(),alex:viewAlex,mkt:viewMkt,os:viewOS,patio:viewPatio,estoque:viewEstoque,fin:viewFin,equipe:viewEquipe,clientes:viewClientes,fotos:viewFotos};
     return `<header class="top">${wordmark()}<span class="date">${hoje}</span>
       ${adm?`<div class="search" role="search">${IC.search}<input id="q" type="search" placeholder="Buscar placa ou carro" autocomplete="off" aria-label="Buscar placa ou carro"><div id="qres" class="qres" hidden></div></div>`:'<span style="margin-right:auto"></span>'}
       ${sino?`<button class="btn bell" data-act="notifs" aria-label="Notificações${unread?', '+unread+' novas':''}">${IC.bell}${unread?`<span class="badge">${unread}</span>`:''}</button>`:''}
@@ -804,7 +1189,9 @@ const navFor=u=>{
     const d=list.filter(t=>t.done).length,p=pct(d,list.length);
     const lbl=cap(dkDate(day).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}));
     const row=(t,isLate)=>`<div class="todo ${t.done?'done':''} ${isLate?'late':''}"><input type="checkbox" data-todo="${t.id}" ${t.done?'checked':''} aria-label="Concluir: ${esc(t.txt)}"><span class="h num">${isLate?dm(dkDate(t.dia).getTime()):esc(t.hora||'—')}</span><span class="t">${esc(t.txt)}</span>
-      <span>${isLate?`<button class="btn sm" data-act="todohoje" data-id="${t.id}">Passar p/ hoje</button>`:''}<button class="x" data-act="tododel" data-id="${t.id}" aria-label="Apagar: ${esc(t.txt)}">×</button></span></div>`;
+     <span>${isLate?`<button class="btn sm" data-act="todohoje" data-id="${t.id}">Passar p/ hoje</button>`:''}
+<button class="btn sm" data-act="todoedit" data-id="${t.id}">Editar</button>
+<button class="x" data-act="tododel" data-id="${t.id}" aria-label="Apagar: ${esc(t.txt)}">×</button></span></div>`;
     return `<div class="pagehead"><div><h1>Minha agenda</h1><p>O que o Alex precisa fazer no dia a dia</p></div></div>
       <div class="dayhead"><button class="btn sm" data-act="day" data-d="-1" aria-label="Dia anterior">‹</button><strong>${isT?'Hoje · ':''}${lbl}</strong><button class="btn sm" data-act="day" data-d="1" aria-label="Próximo dia">›</button>${isT?'':'<button class="btn sm ghost" data-act="day" data-d="0">Voltar para hoje</button>'}</div>
       ${list.length?`<section class="metabox" style="grid-template-columns:minmax(0,1fr)"><div class="metabig"><span>Concluído no dia</span><strong class="num">${p}%</strong><small class="num">${d} de ${list.length} tarefas</small>${prog(p,'big')}</div></section>`:''}
@@ -852,6 +1239,154 @@ const navFor=u=>{
       <div class="actions">${p?`<button type="button" class="btn ghost" data-act="delpost" data-id="${p.id}">Apagar</button>`:''}<button type="button" class="btn" data-act="close">Cancelar</button><button class="btn red" type="submit">Salvar</button></div></form>`,true);
   }
   
+
+  function fotosResultados(q=''){
+  const termo=norm(q);
+  const placa=plateN(q);
+
+  const lista=CARS.filter(c=>{
+    if(!termo)return true;
+
+    return (
+      (placa.length>=2 && plateN(c.placa).includes(placa)) ||
+      norm(cn(c)+' '+(c.cliente||'')).includes(termo)
+    );
+  }).sort((a,b)=>(a.st==='entregue')-(b.st==='entregue'));
+
+  if(!lista.length){
+    return '<div class="empty">Nenhum veículo encontrado.</div>';
+  }
+
+  return lista.map(c=>{
+    const os=osOf(c.id);
+    const total=os?(os.photos||[]).length:0;
+
+    return `
+      <button class="oscard" data-act="fotoscar" data-car="${c.id}">
+        <div class="l1">
+          <b>${esc(cn(c))}</b>
+          ${plateH(c)}
+        </div>
+        <div class="sub">
+          ${esc(c.cliente||'Sem cliente informado')}
+        </div>
+        <div class="sub">
+          ${os?esc(os.num):'Sem ordem de serviço'}
+          · ${total} fotos registradas
+        </div>
+        <div class="btn sm">Abrir histórico fotográfico</div>
+      </button>
+    `;
+  }).join('');
+}
+function viewFotos(){
+  return `
+    <div class="pagehead">
+      <div>
+        <h1>Histórico Fotográfico</h1>
+        <p>Pesquise um veículo para consultar e registrar fotos.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <label>Pesquisar veículo por placa ou modelo
+        <input
+          id="foto-q"
+          type="search"
+          placeholder="Digite a placa ou modelo do veículo..."
+          autocomplete="off"
+        >
+      </label>
+    </div>
+
+    <div id="foto-results" class="oslist">
+      ${fotosResultados()}
+    </div>
+  `;
+}
+
+function fotosCarDetail(carId){
+  const c=car(carId);
+  const os=osOf(carId);
+
+  if(!c){
+    toast('Veículo não encontrado.');
+    return;
+  }
+
+  if(!os){
+    toast('Este veículo ainda não possui uma ordem de serviço.');
+    return;
+  }
+
+  os.photos=os.photos||[];
+
+  const fotos=os.photos.map(p=>`
+    <figure class="fig">
+      <div class="thumb">
+        <img src="${p.src||NOPHOTO}" alt="${esc(p.leg||'Foto')}">
+      </div>
+      <figcaption>
+        <strong>${esc(p.leg||'Registro')}</strong><br>
+        ${esc(fn(p.by))} · ${dthm(p.ts)}
+      </figcaption>
+    </figure>
+  `).join('');
+
+  openModal(`
+    <div class="pagehead">
+      <div>
+        <h2>${esc(cn(c))} ${plateH(c)}</h2>
+        <p>${esc(os.num)} · Histórico Fotográfico</p>
+      </div>
+    </div>
+
+    <div class="banner">
+      <strong>${os.photos.length} fotos registradas</strong>
+    </div>
+
+    <h3 class="sec">Adicionar novas fotos</h3>
+
+    <form id="f-foto" data-car="${c.id}" data-os="${os.id}">
+      <label>Etapa do veículo
+        <select id="foto-stage" required>
+          <option value="in">Recebimento</option>
+          ${STAGES.map(k=>`
+            <option value="${k}">${esc(SETORES[k].nome)}</option>
+          `).join('')}
+          <option value="outros">Outros registros</option>
+        </select>
+      </label>
+
+      <label>Observação
+        <textarea id="foto-leg" rows="2"
+          placeholder="Descreva o registro..."></textarea>
+      </label>
+
+      <label class="addphoto">
+        <input type="file" accept="image/*" multiple
+          id="foto-files" required>
+        <span class="btn sm">+ Selecionar fotos</span>
+      </label>
+
+      <button class="btn red" type="submit">
+        Salvar fotos
+      </button>
+    </form>
+
+    <h3 class="sec">Fotos do veículo</h3>
+
+    <div class="thumbs">
+      ${fotos||'<p class="empty">Nenhuma foto registrada.</p>'}
+    </div>
+
+    <div class="actions">
+      <button class="btn" data-act="close">Fechar</button>
+    </div>
+  `,true);
+}
+
+
   /* ---------- lista de OS ---------- */
   function viewOS(){
     const list=OSL.filter(os=>state.osFiltro==='todas'||(state.osFiltro==='abertas')===!isDone(os)).sort((a,b)=>b.id-a.id);
@@ -905,8 +1440,28 @@ const navFor=u=>{
     const entTxt=c.entrega===TK()?`Entregar hoje${c.hora?' às '+c.hora:''}`:'';
     openModal(`<div class="oshead"><div><h2>${esc(cn(c))} ${plateH(c)}</h2><p>${os.num}${c.cliente?' · '+esc(c.cliente):''}${c.ent?' · entrada '+c.ent:''}${entTxt?' · <strong class="warn">'+entTxt+'</strong>':''}</p>
         ${adm?`<div class="headbtns"><button class="btn sm" data-act="editcar" data-car="${c.id}" data-os="${os.id}">${c.placa?'Editar dados do carro':'Cadastrar placa'}</button>${c.st!=='entregue'?`<button class="btn sm" data-act="entrega" data-car="${c.id}" data-os="${os.id}">${entTxt?'Alterar entrega':'Marcar entrega para hoje'}</button>`:''}${c.st==='pronto'?`<button class="btn sm red" data-act="carout" data-car="${c.id}" data-os="${os.id}">Registrar entrega</button>`:''}</div>`:''}</div>
-        ${adm?`<button class="btn sm" data-act="editos" data-os="${os.id}">Editar OS</button><button class="btn sm" data-act="reportos" data-os="${os.id}">PDF completo para cliente</button>`:""}<button class="btn sm ghost" data-act="close">Fechar</button></div>
-      ${os.service||os.parts?`<div class="banner"><div><strong>Serviço:</strong> ${esc(os.service||'Não informado')}<br><strong>Peças:</strong> ${esc(os.parts||'Não informado')}</div></div>`:''}
+        ${adm?`
+<button class="btn sm" data-act="editos" data-os="${os.id}">Editar OS</button>
+<button class="btn sm" data-act="deleteos" data-os="${os.id}">Excluir OS</button>
+<button class="btn sm" data-act="reportos" data-os="${os.id}">PDF completo para cliente</button>
+`:""}
+     ${os.service||os.parts||os.serviceValue||os.partsValue?`
+  <div class="banner">
+    <div style="width:100%">
+      <strong>Serviço:</strong> ${esc(os.service||'Não informado')}
+      <br>
+      <strong>Valor do serviço:</strong> R$ ${(Number(os.serviceValue)||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
+      <br><br>
+      <strong>Peças:</strong> ${esc(os.parts||'Não informado')}
+      <br>
+      <strong>Valor das peças:</strong> R$ ${(Number(os.partsValue)||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
+      <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+      <strong style="font-size:17px">
+        TOTAL DA OS: R$ ${(Number(os.totalValue)||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}
+      </strong>
+    </div>
+  </div>
+`:''}
       ${probs}<section style="margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:10px"><div class="subh">Perguntas e respostas · OS ${esc(os.num)}</div>${(()=>{const qs=QUESTIONS.filter(q=>+q.os===+os.id).sort((a,b)=>a.ts-b.ts);return qs.length?qs.map(q=>`<div class="banner" style="margin:7px 0"><div><strong>${esc(q.byName)} · ${dthm(q.ts)}</strong><br>${esc(q.question)}${q.answer?`<div style="margin-top:8px;border-left:2px solid var(--green);padding-left:8px"><strong>Alex respondeu:</strong> ${esc(q.answer)}<small style="display:block">${dthm(q.answerTs)}</small></div>`:'<div class="note">Aguardando resposta do Alex.</div>'}</div>${adm&&!q.answer?`<button class="btn sm red" data-act="qa-reply" data-q="${q.id}">Responder</button>`:''}</div>`).join(''):'<p class="note">Nenhuma pergunta nesta OS.</p>'})()}${!adm?`<form id="f-qa" data-os="${os.id}" style="display:flex;gap:8px;margin-top:10px"><input name="question" required maxlength="500" placeholder="Escreva sua pergunta para o Alex" style="flex:1;min-width:0"><button class="btn red" type="submit">Enviar</button></form>`:''}</section>${carbar}${bars}
       <div class="subh">Fotos do recebimento (${os.photos.filter(p=>p.stage==='in').length})</div>${figs(os,os.photos.filter(p=>p.stage==='in'))}
       ${adm?`<div><label class="addphoto"><input type="file" accept="image/*" multiple data-stagephoto="${os.id}" data-stage="in"><span class="btn sm">+ Adicionar fotos do recebimento</span></label></div>`:''}
@@ -927,8 +1482,13 @@ const navFor=u=>{
       const stages=applicable(os).map(k=>`<tr><td>${SETORES[k].nome}</td><td>${esc(fn(os.stages[k].emp))}</td><td>${esc(os.stages[k].st==='feita'?'Finalizada':os.stages[k].st==='andamento'?'Em andamento':os.stages[k].st==='pausada'?'Pausada':'Aguardando')}</td><td>${os.stages[k].nota?esc(os.stages[k].nota):'—'}</td></tr>`).join('');
       const photos=os.photos.map(p=>`<figure><img src="${p.src}" alt="${esc(p.leg)}"><figcaption>${esc(p.leg)} · ${esc(fn(p.by))} · ${dthm(p.ts)}</figcaption></figure>`).join('');
       const payer=CLIENTS.find(x=>+x.id===+os.clientId)||{};
-      return `<article><div class="osband"><span class="osbrand"><b>AMBROZIO</b> <strong>CAR</strong></span><span class="osnumber">${esc(os.num)}</span></div><h2>${esc(c.modelo||'Veículo')} ${esc(c.cor||'')}</h2><div class="infogrid"><section><h3>VEÍCULO</h3><p><b>Placa:</b> ${esc(c.placa||'Não informada')}<br><b>Cor:</b> ${esc(c.cor||'—')}</p></section><section><h3>PROPRIETÁRIO / CLIENTE</h3><p>${esc(c.cliente||'Não informado')}</p></section><section><h3>CLIENTE PAGADOR / EMPRESA</h3><p><b>${esc(payer.nome||'Não vinculado')}</b><br>${esc(payer.doc||'')}<br>${esc(payer.contato||'')}<br>${esc(payer.email||'')}</p></section><section><h3>STATUS</h3><p>${completion}</p></section></div>
-        <p><b>Serviço solicitado:</b> ${esc(os.service||'Não informado')}<br><b>Peças:</b> ${esc(os.parts||'Não informado')}</p>
+      return `<article><div class="osband"><span class="osbrand"><b>AMBROZIO</b> <strong>CAR</strong></span><span class="osnumber">${esc(os.num)}</span></div><h2>${esc(c.modelo||'Veículo')} ${esc(c.cor||'')}</h2><div class="infogrid"><section><h3>VEÍCULO</h3><p><b>Placa:</b> ${esc(c.placa||'Não informada')}<br><b>Cor:</b> ${esc(c.cor||'—')}</p></section><section><h3>PROPRIETÁRIO / CLIENTE</h3><p>${esc(c.cliente||'Não informado')}</p></section><section><h3>CLIENTE PAGADOR / EMPRESA</h3><p><b>${esc(payer.nome||'Não vinculado')}</b><br>${esc(payer.doc||'')}<br>${esc(payer.contato||'')}<br>${esc(payer.email||'')}</p></section><section><h3>STATUS</h3><p>${completion}</p></section></div><p>
+  <b>Serviço solicitado:</b> ${esc(os.service||'Não informado')}<br>
+  <b>Valor do serviço:</b> ${(Number(os.serviceValue)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}<br>
+  <b>Peças:</b> ${esc(os.parts||'Não informado')}<br>
+  <b>Valor das peças:</b> ${(Number(os.partsValue)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}<br>
+  <b>Total da OS:</b> ${((Number(os.serviceValue)||0)+(Number(os.partsValue)||0)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+</p><p><b>Serviço solicitado:</b> ${esc(os.service||'Não informado')}<br><b>Peças:</b> ${esc(os.parts||'Não informado')}</p>
         <table><thead><tr><th>Etapa</th><th>Responsável</th><th>Status</th><th>Observação</th></tr></thead><tbody>${stages}</tbody></table>
         <h3>Fotos do processo (${os.photos.length})</h3><div class="photos">${photos||'<p>Sem fotos anexadas.</p>'}</div></article>`;
     }).join('');
@@ -943,8 +1503,69 @@ const navFor=u=>{
     </style></head><body><div class="head"><div><h1 style="color:#111;border-left:6px solid #e11d2e;padding-left:10px">AMBROZIO <span style="color:#e11d2e">CAR</span></h1><b>${title}</b><p>CNPJ 46.855.472/0001-27 · Rua Benedito Novo, 198 · CEP 89810-060<br>WhatsApp (49) 98920-3862 · ambroziocar@gmail.com</p></div><small>Gerado em ${generated}</small></div>${detail||'<p>Nenhuma O.S. com atividade concluída no período.</p>'}<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script></body></html>`);
     w.document.close();
   }
-  function editOSForm(id){const o=getOS(id),c=car(o.car);if(!o)return;openModal(`<h2>Editar ordem de serviço ${esc(o.num)}</h2><form id="f-editos" data-os="${o.id}" style="display:flex;flex-direction:column;gap:12px"><div class="banner"><strong>${esc(cn(c))} ${esc(c.placa||'')}</strong></div><label>Empresa / cliente pagador<select id="eo-client"><option value="">Sem vínculo</option>${CLIENTS.map(x=>`<option value="${x.id}" ${+o.clientId===x.id?'selected':''}>${esc(x.nome)}${x.doc?' · '+esc(x.doc):''}</option>`).join('')}</select></label><label>Serviços solicitados<textarea id="eo-service" rows="3">${esc(o.service||'')}</textarea></label><label>Peças / materiais<textarea id="eo-parts" rows="3">${esc(o.parts||'')}</textarea></label><div class="actions"><button type="button" class="btn" data-act="backos" data-os="${o.id}">Cancelar</button><button class="btn red" type="submit">Salvar alterações</button></div></form>`,true)}
-  function companyMonthlyPDF(){const month=prompt('Informe o mês do relatório no formato AAAA-MM',new Date(now()).toISOString().slice(0,7));if(!month||!/^\d{4}-\d{2}$/.test(month))return;const groups=CLIENTS.map(cl=>{const rows=OSL.filter(o=>+o.clientId===cl.id&&String(o.created||'').slice(0,7)===month);if(!rows.length)return '';const total=rows.length;return `<section><h2>${esc(cl.nome)} ${cl.doc?'· '+esc(cl.doc):''}</h2><p>Contato: ${esc(cl.contato||'—')} · ${esc(cl.email||'—')}</p><table><thead><tr><th>OS</th><th>Veículo</th><th>Placa</th><th>Serviço</th><th>Situação</th></tr></thead><tbody>${rows.map(o=>{const c=car(o.car)||{};return `<tr><td>${esc(o.num)}</td><td>${esc(c.modelo||'')}</td><td>${esc(c.placa||'')}</td><td>${esc(o.service||'—')}</td><td>${isDone(o)?'Finalizada':'Em andamento'}</td></tr>`}).join('')}</tbody></table><p><b>Total de ordens no mês: ${total}</b></p></section>`}).join('');const w=window.open('','_blank');if(!w){toast('Permita pop-ups para gerar o PDF.');return;}w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Ambrozio Car · Relatório mensal ${month}</title><style>body{font:12px Arial;color:#202124;margin:24px}header{background:#111;color:white;padding:16px;border-bottom:5px solid #e11d2e}h1{margin:0}h2{border-bottom:2px solid #e11d2e;padding-bottom:6px}table{width:100%;border-collapse:collapse;margin:12px 0}td,th{border:1px solid #bbb;padding:6px;text-align:left}th{background:#eee}section{page-break-inside:avoid;margin-bottom:24px}.company{font-size:11px}@media print{body{margin:10mm}}</style></head><body><header><h1>AMBROZIO CAR</h1><div class="company">CNPJ 46.855.472/0001-27 · Rua Benedito Novo, 198 · CEP 89810-060<br>WhatsApp (49) 98920-3862 · ambroziocar@gmail.com</div><h2 style="border:0">Relatório mensal por empresa · ${month}</h2></header>${groups||'<p>Nenhuma OS vinculada a clientes cadastrados neste mês.</p>'}<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script></body></html>`);w.document.close()}
+  function editOSForm(id){
+  const o=getOS(id);
+  if(!o)return;
+
+  const c=car(o.car)||{};
+
+  openModal(`
+    <h2>Editar ordem de serviço ${esc(o.num)}</h2>
+
+    <form id="f-editos" data-os="${o.id}" style="display:flex;flex-direction:column;gap:12px">
+
+      <div class="banner">
+        <strong>${esc(cn(c))} ${esc(c.placa||'')}</strong>
+      </div>
+
+      <label>Empresa / cliente pagador
+        <select id="eo-client">
+          <option value="">Sem vínculo</option>
+          ${CLIENTS.map(x=>`
+            <option value="${x.id}" ${+o.clientId===x.id?'selected':''}>
+              ${esc(x.nome)}${x.doc?' · '+esc(x.doc):''}
+            </option>
+          `).join('')}
+        </select>
+      </label>
+
+      <label>Serviços solicitados
+        <textarea id="eo-service" rows="3">${esc(o.service||'')}</textarea>
+      </label>
+
+      <label>Valor do serviço (R$)
+        <input id="eo-service-value" type="number" min="0" step="0.01" value="${Number(o.serviceValue)||0}">
+      </label>
+
+      <label>Peças / materiais
+        <textarea id="eo-parts" rows="3">${esc(o.parts||'')}</textarea>
+      </label>
+
+      <label>Valor das peças (R$)
+        <input id="eo-parts-value" type="number" min="0" step="0.01" value="${Number(o.partsValue)||0}">
+      </label>
+
+      <div class="banner">
+        <strong>Total da OS: R$ <span id="eo-total">${((Number(o.serviceValue)||0)+(Number(o.partsValue)||0)).toFixed(2).replace('.',',')}</span></strong>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" data-act="backos" data-os="${o.id}">Cancelar</button>
+        <button class="btn red" type="submit">Salvar alterações</button>
+      </div>
+
+    </form>
+  `,true);
+
+  const atualizarTotal=()=>{
+    const serv=Number($('#eo-service-value').value)||0;
+    const pecas=Number($('#eo-parts-value').value)||0;
+    $('#eo-total').textContent=(serv+pecas).toFixed(2).replace('.',',');
+  };
+
+  $('#eo-service-value').addEventListener('input',atualizarTotal);
+  $('#eo-parts-value').addEventListener('input',atualizarTotal);
+}
   /* ---------- pátio ---------- */
   function viewPatio(){
     const dentro=CARS.filter(c=>c.st!=='entregue');
@@ -965,41 +1586,325 @@ const navFor=u=>{
   
   /* ---------- estoque e EPI ---------- */
   const nivel=i=>i.qtd<=i.min*0.5?'crit':i.qtd<i.min?'warn':'ok';
-  function viewEstoque(){
-    const baixos=ESTOQUE.filter(i=>nivel(i)!=='ok'),ord={crit:0,warn:1,ok:2};
-    const lista=ESTOQUE.filter(i=>state.estFiltro==='todos'||i.cat===state.estFiltro);
-    const rows=[...lista].sort((a,b)=>ord[nivel(a)]-ord[nivel(b)]||a.nome.localeCompare(b.nome)).map(i=>{const n=nivel(i),pc=Math.min(100,Math.round(i.qtd/(i.min*2||1)*100));
-      return `<tr><td><strong>${esc(i.nome)}</strong></td><td>${i.cat}</td><td class="num">${i.min} ${esc(i.un)}</td>
-        <td><div class="meter ${n}" role="img" aria-label="${pc}% do nível ideal"><i style="width:${pc}%"></i></div></td>
-        <td><span class="pill ${n==='ok'?'ok':n}">${n==='ok'?'Normal':n==='warn'?'Baixo':'Crítico'}</span></td>
-        <td><div class="qty"><button data-act="est" data-id="${i.id}" data-d="-1" aria-label="Retirar 1 de ${esc(i.nome)}">−</button><strong class="num">${i.qtd}</strong><button data-act="est" data-id="${i.id}" data-d="1" aria-label="Adicionar 1 de ${esc(i.nome)}">+</button><small>${esc(i.un)}</small></div></td></tr>`}).join('');
-    return `<div class="pagehead"><div><h1>Estoque e EPI</h1><p>Materiais da oficina e equipamentos de proteção</p></div><button class="btn red" data-act="newitem">+ Novo item</button></div>
-      <div class="stats">${stat('Itens cadastrados',ESTOQUE.length,'')}${stat('Abaixo do mínimo',baixos.length,baixos.length?'repor em breve':'tudo em dia',baixos.length?'alert':'')}${stat('EPI abaixo do mínimo',baixos.filter(i=>i.cat==='EPI').length,'')}</div>
-      <div class="bar">${[['todos','Tudo'],['Material','Materiais'],['EPI','EPI']].map(([k,l])=>`<button class="tab" data-act="estf" data-f="${k}" aria-pressed="${state.estFiltro===k}">${l}</button>`).join('')}</div>
-      <div class="tablewrap"><table><thead><tr><th>Item</th><th>Tipo</th><th>Mínimo</th><th>Nível</th><th>Situação</th><th class="r">Em estoque</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  }
-  
+ 
+function viewEstoque(){
+  const baixos=ESTOQUE.filter(i=>nivel(i)!=='ok');
+  const ord={crit:0,warn:1,ok:2};
+
+  const lista=ESTOQUE.filter(
+    i=>state.estFiltro==='todos'||i.cat===state.estFiltro
+  );
+
+  const rows=[...lista]
+    .sort((a,b)=>
+      ord[nivel(a)]-ord[nivel(b)]||
+      a.nome.localeCompare(b.nome)
+    )
+    .map(i=>{
+      const n=nivel(i);
+      const pc=Math.min(
+        100,
+        Math.round(i.qtd/(i.min*2||1)*100)
+      );
+
+      return `
+        <tr>
+          <td>
+            <strong class="item-name">${esc(i.nome)}</strong>
+          </td>
+
+          <td>
+            <span class="item-type">${esc(i.cat)}</span>
+          </td>
+
+          <td class="stock-min num">
+            ${i.min} ${esc(i.un)}
+          </td>
+
+          <td>
+            <div class="stock-level">
+              <div class="meter ${n}">
+                <i style="width:${pc}%"></i>
+              </div>
+              <small>${pc}% do nível ideal</small>
+            </div>
+          </td>
+
+          <td>
+            <span class="pill ${n==='ok'?'ok':n}">
+              ${n==='ok'?'Normal':n==='warn'?'Baixo':'Crítico'}
+            </span>
+          </td>
+
+          <td>
+            <div class="qty">
+              <button data-act="est" data-id="${i.id}" data-d="-1"
+                aria-label="Retirar 1 de ${esc(i.nome)}">−</button>
+
+              <strong class="num">${i.qtd}</strong>
+
+              <button data-act="est" data-id="${i.id}" data-d="1"
+                aria-label="Adicionar 1 de ${esc(i.nome)}">+</button>
+
+              <small>${esc(i.un)}</small>
+            </div>
+          </td>
+
+          <td class="actions-cell">
+            <div class="stock-actions">
+              <button class="btn sm"
+                data-act="itemedit" data-id="${i.id}">
+                Editar
+              </button>
+
+              <button class="btn sm red"
+                data-act="itemdel" data-id="${i.id}">
+                Excluir
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+  return `
+    <div class="pagehead">
+      <div>
+        <h1>Estoque e EPI</h1>
+        <p>Controle de materiais, quantidades e equipamentos de proteção</p>
+      </div>
+
+      <button class="btn red" data-act="newitem">
+        + Novo item
+      </button>
+    </div>
+
+    <div class="stats">
+      ${stat('Itens cadastrados',ESTOQUE.length,'')}
+      ${stat('Abaixo do mínimo',baixos.length,
+        baixos.length?'Requer atenção':'Tudo em dia',
+        baixos.length?'alert':'')}
+      ${stat('EPI abaixo do mínimo',
+        baixos.filter(i=>i.cat==='EPI').length,'')}
+    </div>
+
+    <div class="bar">
+      ${[['todos','Tudo'],['Material','Materiais'],['EPI','EPI']]
+        .map(([k,l])=>`
+          <button class="tab" data-act="estf" data-f="${k}"
+            aria-pressed="${state.estFiltro===k}">
+            ${l}
+          </button>
+        `).join('')}
+    </div>
+
+    <div class="tablewrap estoque-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Categoria</th>
+            <th>Mínimo</th>
+            <th>Nível de estoque</th>
+            <th>Situação</th>
+            <th>Quantidade</th>
+            <th class="r">Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rows||`
+            <tr>
+              <td colspan="7" class="empty">
+                Nenhum item cadastrado nesta categoria.
+              </td>
+            </tr>
+          `}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+  function finForm(tipo){
+  const receita=tipo==='in';
+
+  openModal(`
+    <h2>${receita?'Nova receita':'Nova despesa'}</h2>
+    <form id="f-fin">
+      <input type="hidden" name="tipo" value="${tipo}">
+
+      <label>Descrição
+        <input name="desc" required placeholder="Ex: Serviço, peça, aluguel...">
+      </label>
+
+      <label>Valor (R$)
+        <input name="valor" type="number" min="0.01" step="0.01" required>
+      </label>
+
+      <label>Data
+        <input name="data" type="date" value="${new Date().toISOString().slice(0,10)}" required>
+      </label>
+
+      <label>Setor / categoria
+        <input name="setor" placeholder="Ex: Oficina, administrativo">
+      </label>
+
+      <button class="btn" type="submit">Salvar lançamento</button>
+    </form>
+  `);
+}
+
   /* ---------- financeiro ---------- */
-  function viewFin(){
-    const ent=FIN.filter(f=>f.tipo==='in'),sai=FIN.filter(f=>f.tipo==='out');
-    const rec=ent.filter(f=>f.pago).reduce((a,f)=>a+f.valor,0),apr=ent.filter(f=>!f.pago).reduce((a,f)=>a+f.valor,0),des=sai.reduce((a,f)=>a+f.valor,0);
-    const porSetor=STAGES.map(s=>({s,pago:ent.filter(f=>f.setor===s&&f.pago).reduce((a,f)=>a+f.valor,0),pend:ent.filter(f=>f.setor===s&&!f.pago).reduce((a,f)=>a+f.valor,0)})).filter(x=>x.pago+x.pend>0);
-    const max=Math.max(1,...porSetor.map(x=>x.pago+x.pend));
-    const bars=porSetor.map(x=>`<div class="hbar" style="--c:${SETORES[x.s].cor}"><span>${SETORES[x.s].nome}</span>
-      <div class="track" role="img" aria-label="${SETORES[x.s].nome}: ${brl(x.pago)} recebido, ${brl(x.pend)} a receber"><div class="paid" style="width:${x.pago/max*100}%"></div><div class="pend" style="width:${x.pend/max*100}%"></div></div><strong class="num">${brl(x.pago+x.pend)}</strong></div>`).join('');
-    const lista=FIN.filter(f=>state.finFiltro==='todos'||(state.finFiltro==='pend'?(f.tipo==='in'&&!f.pago):f.pago)).sort((a,b)=>b.data.split('/').reverse().join('').localeCompare(a.data.split('/').reverse().join('')));
-    const rows=lista.map(f=>`<tr><td class="num">${f.data}</td><td>${esc(f.desc)}</td><td>${SETORES[f.setor]?SETORES[f.setor].nome:esc(f.setor)}</td>
-      <td class="r num ${f.tipo==='in'?'in':'out'}">${f.tipo==='in'?'+':'−'} ${brl(f.valor)}</td><td>${f.pago?`<span class="pill ok">${f.tipo==='in'?'Recebido':'Pago'}</span>`:'<span class="pill warn">A receber</span>'}</td>
-      <td class="r">${!f.pago?`<button class="btn sm" data-act="receber" data-id="${f.id}">Marcar recebido</button>`:''}</td></tr>`).join('');
-    const mes=cap(new Date(now()).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}));
-    return `<div class="pagehead"><div><h1>Financeiro</h1><p>${mes} · valores de exemplo</p></div></div>
-      <div class="stats">${stat('Recebido',brl(rec),'')}${stat('A receber',brl(apr),'')}${stat('Despesas',brl(des),'')}${stat('Saldo do mês',brl(rec-des),rec-des>=0?'positivo':'negativo')}</div>
-      <div class="cols"><section class="panel"><h3>Faturamento por setor</h3>${bars}<div class="key"><span><i></i>Recebido</span><span><i class="h"></i>A receber</span></div></section>
-        <section class="panel"><h3>Resumo</h3><dl class="kv"><dt>Faturado</dt><dd class="num">${brl(rec+apr)}</dd><dt>Recebido</dt><dd class="num in">${brl(rec)}</dd><dt>A receber</dt><dd class="num warn">${brl(apr)}</dd><dt>Despesas</dt><dd class="num out">${brl(des)}</dd><dt>Saldo atual</dt><dd class="num"><strong>${brl(rec-des)}</strong></dd></dl></section></div>
-      <div class="bar">${[['todos','Tudo'],['pend','A receber'],['pago','Pagos']].map(([k,l])=>`<button class="tab" data-act="finf" data-f="${k}" aria-pressed="${state.finFiltro===k}">${l}</button>`).join('')}</div>
-      <div class="tablewrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Setor / tipo</th><th class="r">Valor</th><th>Situação</th><th class="r"></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  function sincronizarFinanceiroOS(os){
+  const valor = Number(os.totalValue) || 0;
+
+  const existente = FIN.find(f => String(f.osId) === String(os.id));
+
+  if(valor <= 0){
+    if(existente){
+      FIN = FIN.filter(f => String(f.osId) !== String(os.id));
+    }
+    return;
   }
-  
+
+  if(existente){
+    existente.desc = `Ordem de Serviço ${os.num}`;
+    existente.valor = valor;
+    existente.data = existente.data || new Date().toLocaleDateString('pt-BR');
+    existente.setor = 'OS';
+  } else {
+    FIN.push({
+      id: Date.now(),
+      osId: os.id,
+      tipo: 'in',
+      desc: `Ordem de Serviço ${os.num}`,
+      valor: valor,
+      data: new Date().toLocaleDateString('pt-BR'),
+      setor: 'OS',
+      pago: false
+    });
+  }
+}
+  function viewFin(){
+  const ent=FIN.filter(f=>f.tipo==='in');
+  const sai=FIN.filter(f=>f.tipo==='out');
+
+  const rec=ent.filter(f=>f.pago).reduce((a,f)=>a+f.valor,0);
+  const apr=ent.filter(f=>!f.pago).reduce((a,f)=>a+f.valor,0);
+  const des=sai.reduce((a,f)=>a+f.valor,0);
+
+  const porSetor=STAGES.map(s=>({
+    s,
+    pago:ent.filter(f=>f.setor===s&&f.pago).reduce((a,f)=>a+f.valor,0),
+    pend:ent.filter(f=>f.setor===s&&!f.pago).reduce((a,f)=>a+f.valor,0)
+  })).filter(x=>x.pago+x.pend>0);
+
+  const max=Math.max(1,...porSetor.map(x=>x.pago+x.pend));
+
+  const bars=porSetor.map(x=>`
+    <div class="hbar" style="--c:${SETORES[x.s].cor}">
+      <span>${SETORES[x.s].nome}</span>
+      <div class="track">
+        <div class="paid" style="width:${x.pago/max*100}%"></div>
+        <div class="pend" style="width:${x.pend/max*100}%"></div>
+      </div>
+      <strong class="num">${brl(x.pago+x.pend)}</strong>
+    </div>
+  `).join('');
+
+  const lista=FIN.filter(f=>
+    state.finFiltro==='todos'||
+    (state.finFiltro==='pend'?(f.tipo==='in'&&!f.pago):f.pago)
+  ).sort((a,b)=>
+    b.data.split('/').reverse().join('').localeCompare(
+      a.data.split('/').reverse().join('')
+    )
+  );
+
+  const rows=lista.map(f=>`
+    <tr>
+      <td class="num">${f.data}</td>
+      <td>${esc(f.desc)}</td>
+      <td>${SETORES[f.setor]?SETORES[f.setor].nome:esc(f.setor)}</td>
+      <td class="r num ${f.tipo==='in'?'in':'out'}">
+        ${f.tipo==='in'?'+':'−'} ${brl(f.valor)}
+      </td>
+      <td>
+        ${f.pago
+          ? `<span class="pill ok">${f.tipo==='in'?'Recebido':'Pago'}</span>`
+          : `<span class="pill warn">A receber</span>`}
+      </td>
+      <td class="r">
+        ${!f.pago?`<button class="btn sm" data-act="receber" data-id="${f.id}">Marcar recebido</button>`:''}
+        <button class="btn sm red" data-act="findel" data-id="${f.id}">Excluir</button>
+      </td>
+    </tr>
+  `).join('');
+
+  return `
+    <div class="pagehead">
+      <div>
+        <h1>Financeiro</h1>
+        <p>Controle de receitas, despesas e valores a receber</p>
+      </div>
+      <div class="actions">
+        <button class="btn" data-act="finnew" data-tipo="out">+ Despesa</button>
+        <button class="btn red" data-act="finnew" data-tipo="in">+ Receita</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      ${stat('Recebido',brl(rec),'receitas pagas')}
+      ${stat('A receber',brl(apr),'receitas pendentes')}
+      ${stat('Despesas',brl(des),'total registrado')}
+      ${stat('Saldo',brl(rec-des),'recebido menos despesas')}
+    </div>
+
+    <div class="cols">
+      <div class="panel">
+        <h3>Receitas por setor</h3>
+        ${bars||'<p class="empty">Nenhuma receita por setor registrada.</p>'}
+        <div class="key">
+          <span><i></i> Recebido</span>
+          <span><i class="h"></i> Pendente</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Resumo financeiro</h3>
+        <p>Receitas registradas: <strong>${brl(ent.reduce((a,f)=>a+f.valor,0))}</strong></p>
+        <p>Despesas registradas: <strong>${brl(des)}</strong></p>
+        <p>Saldo atual: <strong>${brl(rec-des)}</strong></p>
+      </div>
+    </div>
+
+    <div class="bar">
+      ${[['todos','Todos'],['pend','A receber'],['pagos','Pagos']].map(([k,l])=>`
+        <button class="tab" data-act="finf" data-f="${k}"
+          aria-pressed="${state.finFiltro===k}">${l}</button>
+      `).join('')}
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th>Setor / categoria</th>
+            <th class="r">Valor</th>
+            <th>Status</th>
+            <th class="r">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows||'<tr><td colspan="6" class="empty">Nenhum lançamento financeiro cadastrado.</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
   /* ---------- clientes e empresas ---------- */
   function viewClientes(){
    const q=norm(state.clientQuery||'');
@@ -1011,8 +1916,28 @@ const navFor=u=>{
   function clientForm(id){const c=CLIENTS.find(x=>x.id===+id)||{};openModal(`<h2>${c.id?'Editar cliente':'Novo cliente ou empresa'}</h2><form id="f-client" data-id="${c.id||''}" style="display:flex;flex-direction:column;gap:12px"><label>Nome / razão social<input id="cl-nome" required value="${esc(c.nome||'')}" placeholder="Nome do cliente ou empresa"></label><div class="two"><label>Tipo<select id="cl-tipo"><option ${c.tipo==='Empresa'?'selected':''}>Empresa</option><option ${c.tipo==='Pessoa física'?'selected':''}>Pessoa física</option></select></label><label>CPF / CNPJ<input id="cl-doc" value="${esc(c.doc||'')}" placeholder="Documento"></label></div><div class="two"><label>Telefone / WhatsApp<input id="cl-contato" value="${esc(c.contato||'')}" placeholder="Telefone"></label><label>E-mail<input id="cl-email" type="email" value="${esc(c.email||'')}" placeholder="E-mail"></label></div><label>Endereço<input id="cl-end" value="${esc(c.end||'')}" placeholder="Endereço completo"></label><div class="actions"><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn red" type="submit">Salvar cliente</button></div></form>`,true);}
   /* ---------- equipe ---------- */
   function viewEquipe(){
-    const acesso=u=>u.papel==='dono'?'Tudo, com financeiro, agenda pessoal e notificações':u.papel==='gestor'?'Agenda, ordens de serviço, pátio e estoque':u.papel==='estoque'?'Estoque e EPI':u.faz.length>1?'Todas as etapas das ordens de serviço'+(u.mkt?' e marketing':''):'Etapa de '+SETORES[u.faz[0]].nome;
-    const rows=USERS.map(u=>`<tr><td><div class="l1"><span class="avatar" style="--c:${u.cor}">${initials(u.nome)}</span><strong>${esc(u.nome)}</strong></div></td><td>${esc(u.rotulo)}</td><td><span class="uname">${esc(u.usuario)}</span></td><td>${esc(acesso(u))}</td><td>${NOTIF_PARA.includes(u.id)?'<span class="pill warn">Recebe avisos</span>':''}</td><td class="r">${u.id!==state.user.id?`<button class="btn sm" data-act="pwdreset" data-u="${u.id}">Redefinir senha</button>`:''}</td></tr>`).join('');
+    const acesso=u=>
+  u.papel==='dono'?'Acesso total':
+  u.papel==='gestor'?'Agenda, OS, pátio, estoque e clientes':
+  u.papel==='estoque'?'Estoque e EPI':
+  'Agenda e atividades atribuídas';
+  const rows=TEAM.filter(u=>!u.nome.toLowerCase().includes('maria')).map(u=>`
+<tr>
+<td><div class="l1">
+<span class="avatar" style="--c:${u.cor}">${initials(u.nome)}</span>
+<strong>${esc(u.nome)}</strong>
+</div></td>
+<td>${esc(u.rotulo)}</td>
+<td><span class="uname">${esc(u.usuario)}</span></td>
+<td>${esc(acesso(u))}</td>
+<td>${NOTIF_PARA.includes(u.id)?'<span class="pill warn">Recebe avisos</span>':''}</td>
+<td class="r">
+${state.user.papel==='dono'&&u.papel!=='dono'?`
+<button class="btn sm" data-act="employeeEdit" data-u="${esc(u.id)}">Editar</button>
+<button class="btn sm" data-act="employeeDisable" data-u="${esc(u.id)}">Desativar</button>
+`:''}
+</td>
+</tr>`).join('');
     return `<div class="pagehead">
   <div>
     <h1>Equipe</h1>
@@ -1047,8 +1972,44 @@ const navFor=u=>{
       <label>Responsável<select id="o-e-${k}"><option value="">Qualquer do setor</option>${USERS.filter(x=>x.faz.includes(k)).map(x=>`<option value="${x.id}" ${DEF_EMP[k]===x.id?'selected':''}>${esc(x.nome)}</option>`).join('')}</select></label></div>`).join('');
     openModal(`<h2>${c?'Criar ordem de serviço':'Registrar entrada'}</h2><form id="f-os" data-car="${c?c.id:''}" style="display:flex;flex-direction:column;gap:12px">
       ${dados}
-      <div class="two"><label>Serviço<textarea id="o-service" rows="2" placeholder="Descreva os serviços solicitados"></textarea></label><label>Peças<textarea id="o-parts" rows="2" placeholder="Peças utilizadas ou necessárias"></textarea></label></div><label>Empresa / cliente responsável pelo pagamento<select id="o-client"><option value="">Selecionar cliente ou empresa…</option>${CLIENTS.map(x=>`<option value="${x.id}">${esc(x.nome)}${x.doc?" · "+esc(x.doc):""}</option>`).join("")}</select></label>
-      <div><div class="subh" style="margin-bottom:6px">Fotos do recebimento · mínimo de 3</div>${picker()}</div>
+     <div class="two">
+  <label>Serviço
+    <textarea id="o-service" rows="2" placeholder="Descreva os serviços solicitados"></textarea>
+  </label>
+  <label>Valor do serviço (R$)
+    <input id="o-service-value" type="number" min="0" step="0.01" value="0">
+  </label>
+</div>
+
+<div class="two">
+  <label>Peças
+    <textarea id="o-parts" rows="2" placeholder="Peças utilizadas ou necessárias"></textarea>
+  </label>
+  <label>Valor das peças (R$)
+    <input id="o-parts-value" type="number" min="0" step="0.01" value="0">
+  </label>
+</div>
+<label>Empresa / cliente responsável pelo pagamento
+  <select id="o-client">
+    <option value="">Sem vínculo</option>
+    ${CLIENTS.map(x=>`
+      <option value="${x.id}">
+        ${esc(x.nome)}${x.doc?' · '+esc(x.doc):''}
+      </option>
+    `).join('')}
+  </select>
+</label>
+
+<div>
+  <div class="subh" style="margin-bottom:6px">
+    Fotos do recebimento · mínimo de 3
+  </div>
+  <p class="note" style="margin:0 0 6px">
+    Adicione pelo menos 3 fotos do veículo no momento do recebimento.
+  </p>
+  ${picker()}
+</div>
+
       <div class="subh">Setores por onde o carro vai passar</div><p class="note">Desmarque o setor que não vai trabalhar neste carro. A OS anda junto com o carro: Funilaria, Preparação, Pintura, Montagem e Polimento.</p>
       ${blocos}
       <label class="task"><input type="checkbox" id="o-meta" checked><span>Colocar o primeiro setor na meta de hoje</span></label>
@@ -1138,6 +2099,72 @@ const navFor=u=>{
     </form>
   `);
 }
+function employeeEditForm(id){
+  const u=TEAM.find(x=>x.id===id);
+  if(!u)return;
+
+  openModal(`
+    <h2>Editar funcionário</h2>
+
+    <form id="f-employee-edit" data-u="${esc(u.id)}"
+      style="display:flex;flex-direction:column;gap:12px">
+
+      <label>Nome completo
+        <input id="emp-edit-nome" required value="${esc(u.nome)}">
+      </label>
+
+      <label>Usuário
+        <input id="emp-edit-user" required value="${esc(u.usuario)}">
+      </label>
+
+      <label>Função
+        <select id="emp-edit-papel">
+          <option value="funcionario" ${u.papel==='funcionario'?'selected':''}>Funcionário</option>
+          <option value="estoque" ${u.papel==='estoque'?'selected':''}>Estoque</option>
+          <option value="gestor" ${u.papel==='gestor'?'selected':''}>Gestor</option>
+        </select>
+      </label>
+
+      <p class="err" id="emp-edit-err" role="alert"></p>
+
+      <div class="actions">
+        <button type="button" class="btn" data-act="close">Cancelar</button>
+        <button class="btn red" type="submit">Salvar alterações</button>
+      </div>
+    </form>
+  `);
+}
+function todoEditForm(id){
+  const task=TODO.find(x=>x.id===+id);
+  if(!task)return;
+
+  openModal(`
+    <h2>Editar tarefa da agenda</h2>
+
+    <form id="f-todo-edit" data-id="${task.id}"
+      style="display:flex;flex-direction:column;gap:12px">
+
+      <label>Descrição da tarefa
+        <input id="te-txt" required value="${esc(task.txt)}">
+      </label>
+
+      <div class="two">
+        <label>Data
+          <input id="te-dia" type="date" required value="${esc(task.dia)}">
+        </label>
+
+        <label>Horário
+          <input id="te-hora" type="time" value="${esc(task.hora||'')}">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" data-act="close">Cancelar</button>
+        <button type="submit" class="btn red">Salvar alterações</button>
+      </div>
+    </form>
+  `);
+}
   function itemForm(){
     openModal(`<h2>Novo item</h2><form id="f-item" style="display:flex;flex-direction:column;gap:12px">
       <label>Nome<input id="i-nome" required placeholder="ex.: Luvas nitrílicas"></label>
@@ -1145,6 +2172,56 @@ const navFor=u=>{
       <div class="two"><label>Quantidade agora<input id="i-qtd" type="number" min="0" step="1" required value="0"></label><label>Mínimo desejado<input id="i-min" type="number" min="0" step="1" required value="1"></label></div>
       <div class="actions"><button type="button" class="btn" data-act="close">Cancelar</button><button class="btn red" type="submit">Adicionar</button></div></form>`);
   }
+
+function itemEditForm(id){
+  const item=ESTOQUE.find(x=>x.id===+id);
+  if(!item){
+    toast('Item não encontrado.');
+    return;
+  }
+
+  openModal(`
+    <h2>Editar item</h2>
+    <form id="f-item-edit" data-id="${item.id}"
+      style="display:flex;flex-direction:column;gap:12px">
+
+      <label>Nome
+        <input id="ei-nome" required value="${esc(item.nome)}">
+      </label>
+
+      <div class="two">
+        <label>Tipo
+          <select id="ei-cat">
+            <option ${item.cat==='Material'?'selected':''}>Material</option>
+            <option ${item.cat==='EPI'?'selected':''}>EPI</option>
+          </select>
+        </label>
+
+        <label>Unidade
+          <input id="ei-un" required value="${esc(item.un)}">
+        </label>
+      </div>
+
+      <div class="two">
+        <label>Quantidade
+          <input id="ei-qtd" type="number" min="0" step="1"
+            required value="${item.qtd}">
+        </label>
+
+        <label>Estoque mínimo
+          <input id="ei-min" type="number" min="0" step="1"
+            required value="${item.min}">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" data-act="close">Cancelar</button>
+        <button type="submit" class="btn red">Salvar alterações</button>
+      </div>
+    </form>
+  `);
+}
+
   function pauseForm(osId,k){
     openModal(`<h2>Pausar serviço</h2><form id="f-pause" data-os="${osId}" data-stage="${k}" style="display:flex;flex-direction:column;gap:12px"><label>Motivo da pausa<select id="p-why">${MOTIVOS.map(m=>`<option>${m}</option>`).join('')}</select></label>
       <p class="note">O Alex é avisado com o horário e o motivo.</p><div class="actions"><button type="button" class="btn" data-act="backos" data-os="${osId}">Voltar</button><button class="btn red" type="submit">Pausar</button></div></form>`);
@@ -1178,44 +2255,60 @@ const navFor=u=>{
   function refreshOS(id){render();osDetail(id,true);}
   function render(){save();$('#root').innerHTML=state.user?appHtml():loginHtml();}
   sb.auth.getSession().then(async ({data,error})=>{
-    if(error || !data.session) return;
-  
-    const authUser=data.session.user;
-  
-    const {data:profile,error:profileError}=await sb
-      .from('profiles')
-      .select('id,nome,usuario,papel,ativo')
-      .eq('id',authUser.id)
-      .single();
-  
-    if(profileError || !profile || !profile.ativo){
-      await sb.auth.signOut();
-      state.user=null;
-      render();
-      return;
-    }
-  
-    const username=authUser.email==='ambroziocar@gmail.com'?'alex':null;
-    const u=USERS.find(x=>x.usuario===username);
-  
-    if(!u){
-      await sb.auth.signOut();
-      state.user=null;
-      render();
-      return;
-    }
-  
-    state.user={
-      ...u,
-      nome:profile.nome,
-      authId:profile.id,
-      papel:profile.papel
-    };
-  
-    state.view=navFor(state.user)[0];
-    await loadCloudState();
+  if(error || !data.session) return;
+
+  const authUser=data.session.user;
+
+  const {data:profile,error:profileError}=await sb
+    .from('profiles')
+    .select('id,nome,usuario,papel,ativo')
+    .eq('id',authUser.id)
+    .single();
+
+  if(profileError || !profile || !profile.ativo){
+    await sb.auth.signOut();
+    state.user=null;
     render();
-  });
+    return;
+  }
+
+  const username=profile.usuario || '';
+
+  const u=USERS.find(x=>x.usuario===username) || {
+    id:profile.id,
+    nome:profile.nome,
+    curto:profile.nome.split(' ')[0],
+    papel:profile.papel,
+    rotulo:profile.papel==='gestor'
+      ? 'Gestor'
+      : profile.papel==='estoque'
+      ? 'Estoque'
+      : 'Funcionário',
+    usuario:username,
+    faz:[],
+    cor:'var(--silver)'
+  };
+
+  state.user={
+    ...u,
+    nome:profile.nome,
+    authId:profile.id,
+    papel:profile.papel
+  };
+
+  state.view=navFor(state.user)[0];
+
+  const cloudLoaded=await loadCloudState();
+
+  if(!cloudLoaded){
+    await sb.auth.signOut();
+    state.user=null;
+    render();
+    return;
+  }
+
+  render();
+});
   const getOS=id=>OSL.find(x=>x.id===+id);
   function swap(os,k,dir){const s=os.stages[k],g=group(k,s.emp),i=g.indexOf(os),j=i+dir;if(i<0||j<0||j>=g.length)return;
     const o=g[j].stages[k],t=o.ord;o.ord=s.ord;s.ord=t;renumber(k);}
@@ -1235,23 +2328,132 @@ const navFor=u=>{
     else if(a==='report'){reportPDF(+d.days);}
     else if(a==='reportos'){if(!isAdmin(state.user)){toast('Apenas a administração pode gerar o PDF completo.');return;}reportPDF(0,d.os);}
     else if(a==='finf'){state.finFiltro=d.f;render();}
+    else if(a==='finnew'){finForm(d.tipo);}
     else if(a==='estf'){state.estFiltro=d.f;render();}
     else if(a==='newos'){if(qr)qr.hidden=true;osForm(d.car,d.placa);}
     else if(a==='companyreport'){companyMonthlyPDF();}
     else if(a==='editos'){if(!isAdmin(state.user)){toast('Apenas a administração pode editar a OS.');return;}editOSForm(d.os);}
+    else if(a==='deleteos'){
+  if(!isAdmin(state.user)){
+    toast('Apenas a administração pode excluir OS.');
+    return;
+  }
+
+  if(!t.dataset.ok){
+    t.dataset.ok='1';
+    t.textContent='Confirmar exclusão?';
+    return;
+  }
+
+  const osId=+d.os;
+  const os=OSL.find(x=>x.id===osId);
+
+  if(!os){
+  toast('Ordem de serviço não encontrada.');
+  return;
+}
+
+// Remove somente a receita automática desta OS
+FIN = FIN.filter(f => String(f.osId) !== String(osId));
+
+OSL = OSL.filter(x => x.id !== osId);
+
+save();
+  closeModal();
+  render();
+  toast('OS excluída. O cadastro do veículo foi preservado.');
+}
     else if(a==='clientnew'){clientForm();}
     else if(a==='qa-reply'){const q=QUESTIONS.find(x=>x.id===+d.q);if(q){const ans=prompt('Resposta para '+q.byName+' (OS '+getOS(q.os)?.num+'):',q.answer||'');if(ans&&ans.trim()){q.answer=ans.trim();q.answerTs=now();save();osDetail(q.os,true);toast('Resposta enviada ao funcionário');}}}
     else if(a==='clientedit'){clientForm(d.id);}
     else if(a==='clientdel'){if(t.dataset.ok){CLIENTS=CLIENTS.filter(c=>c.id!==+d.id);render();toast('Cliente excluído');}else{t.dataset.ok='1';t.textContent='Confirmar';}}
     else if(a==='newitem'){itemForm();}
+
+else if(a==='itemedit'){
+  itemEditForm(d.id);
+}
+else if(a==='itemdel'){
+  const item=ESTOQUE.find(x=>x.id===+d.id);
+  if(!item)return;
+
+  if(!confirm('Deseja realmente excluir '+item.nome+' do estoque?'))return;
+
+  ESTOQUE=ESTOQUE.filter(x=>x.id!==+d.id);
+  save();
+  render();
+  toast('Item excluído do estoque!');
+}
+
     else if(a==='pwd'){pwdForm();}
     else if(a==='pwdreset'){pwdResetForm(d.u);}
-    else if(a==='employeeNew'){
-    if(!isAdmin(state.user)){
-        toast('Apenas a administração pode cadastrar funcionários.');
-        return;
-    }
-    employeeNewForm();
+
+      else if(a==='employeeEdit'){
+  if(state.user.papel!=='dono'){
+    toast('Apenas o dono pode editar funcionários.');
+    return;
+  }
+  employeeEditForm(d.u);
+}
+
+else if(a==='employeeDisable'){
+  if(state.user.papel!=='dono'){
+    toast('Apenas o dono pode desativar funcionários.');
+    return;
+  }
+
+  if(!t.dataset.ok){
+    t.dataset.ok='1';
+    t.textContent='Confirmar desativação?';
+    return;
+  }
+
+  const {error}=await sb
+    .from('profiles')
+    .update({ativo:false})
+    .eq('id',d.u);
+
+  if(error){
+    toast('Erro ao desativar: '+error.message);
+    return;
+  }
+
+  const {data:profiles,error:loadError}=await sb
+    .from('profiles')
+    .select('id,nome,usuario,papel,ativo')
+    .eq('ativo',true);
+
+  if(loadError){
+    toast('Não foi possível atualizar a equipe.');
+    return;
+  }
+
+  TEAM=(profiles||[]).map(p=>({
+    id:p.id,
+    nome:p.nome,
+    curto:p.nome.split(' ')[0],
+    usuario:p.usuario,
+    papel:p.papel,
+    rotulo:p.papel==='dono'?'Dono':
+      p.papel==='gestor'?'Gestor':
+      p.papel==='estoque'?'Estoque':'Funcionário',
+    faz:[],
+    mkt:false,
+    cor:'var(--silver)'
+  }));
+
+  render();
+  toast('Funcionário desativado com sucesso!');
+}
+
+else if(a==='employeeNew'){
+  if(!isAdmin(state.user)){
+    toast('Apenas a administração pode cadastrar funcionários.');
+    return;
+  }
+  employeeNewForm();
+}
+else if(a==='fotoscar'){
+  fotosCarDetail(d.car);
 }
     else if(a==='os'){if(qr)qr.hidden=true;if(d.n){const n=NOTIFS.find(x=>x.id===+d.n);if(n){n.lida=true;render();}}openOS(d.os);}
     else if(a==='close'){closeModal();}
@@ -1271,6 +2473,13 @@ const navFor=u=>{
     else if(a==='carout'){const c=car(d.car);c.st='entregue';c.saida=dm(now());c.saidaTs=now();if(!c.entrega)c.entrega=TK();render();toast(`${cn(c)} entregue às ${hm(now())}`);if(d.os)osDetail(d.os,true);}
     else if(a==='est'){const i=ESTOQUE.find(x=>x.id===+d.id);i.qtd=Math.max(0,i.qtd+(+d.d));render();}
     else if(a==='receber'){FIN.find(x=>x.id===+d.id).pago=true;render();toast('Pagamento registrado');}
+    else if(a==='findel'){
+  if(!confirm('Deseja realmente excluir este lançamento?'))return;
+  FIN=FIN.filter(x=>x.id!==+d.id);
+  save();
+  render();
+  toast('Lançamento excluído!');
+}
     /* ordem da fila e meta */
     else if(a==='up'||a==='down'){swap(getOS(d.os),d.stage,a==='up'?-1:1);render();}
     else if(a==='meta'){const os=getOS(d.os),s=os.stages[d.stage];s.meta=s.meta===TK()?null:TK();if(s.meta)toEnd(os,d.stage);
@@ -1300,6 +2509,7 @@ const navFor=u=>{
     else if(a==='delideia'){IDEIAS=IDEIAS.filter(x=>x.id!==+d.id);render();}
     /* agenda do Alex */
     else if(a==='day'){state.todoDay=+d.d===0?TK():addDays(state.todoDay||TK(),+d.d);render();}
+    else if(a==='todoedit'){todoEditForm(d.id);}
     else if(a==='tododel'){TODO=TODO.filter(x=>x.id!==+d.id);render();}
     else if(a==='todohoje'){const x=TODO.find(y=>y.id===+d.id);x.dia=TK();render();}
     else if(a==='reset'){if(t.dataset.ok){try{localStorage.removeItem(SKEY)}catch(_){}seedAll();render();toast('Dados da agenda diária carregados de novo');}else{t.dataset.ok='1';t.textContent='Toque de novo para confirmar (apaga as alterações)';}}
@@ -1316,6 +2526,11 @@ const navFor=u=>{
   document.addEventListener('focusin',e=>{if(e.target.id==='q'&&e.target.value.trim()){$('#qres').hidden=false;}});
   document.addEventListener('change',async e=>{
     const t=e.target;
+    if(t.id==='foto-q'){
+  const r=$('#foto-results');
+  if(r)r.innerHTML=fotosResultados(t.value.trim());
+  return;
+}
     if(t.dataset.task){const os=getOS(t.dataset.os);const tk=os.stages[t.dataset.stage].tasks.find(x=>x.id===+t.dataset.task);tk.done=t.checked;refreshOS(os.id);}
     else if(t.dataset.assign){const os=getOS(t.dataset.assign),k=t.dataset.stage;os.stages[k].emp=t.value||null;toEnd(os,k);refreshOS(os.id);toast('Responsável atualizado. O carro entrou no fim da fila dele.');}
     else if(t.dataset.movesector){if(!t.value)return;const os=getOS(t.dataset.movesector),cur=curStage(os);
@@ -1331,7 +2546,68 @@ const navFor=u=>{
   });
   document.addEventListener('submit',async e=>{
     e.preventDefault();const f=e.target,id=f.id;
-    
+
+if(id==='f-foto'){
+  const os=getOS(f.dataset.os);
+  if(!os)return;
+
+  const stage=$('#foto-stage').value;
+  const leg=$('#foto-leg').value.trim()||'Registro fotográfico';
+  const files=[...$('#foto-files').files];
+
+  if(!files.length){
+    toast('Selecione pelo menos uma foto.');
+    return;
+  }
+
+  let total=0;
+
+try{
+  for(const file of files){
+    const foto=await enviarFotoNuvem(
+      file,
+      os,
+      stage,
+      leg,
+      state.user.id
+    );
+
+    os.photos.push(foto);
+    total++;
+  }
+}catch(error){
+  console.error('Erro ao enviar foto:',error);
+  toast('Erro ao enviar foto: '+error.message);
+  return;
+}
+  save();
+  toast(total+' foto(s) salva(s) com sucesso!');
+  fotosCarDetail(+f.dataset.car);
+  return;
+}
+
+    if(id==='f-fin'){
+  
+  const fd=new FormData(f);
+  const data=fd.get('data').split('-').reverse().join('/');
+  
+
+  FIN.push({
+    id:Date.now(),
+    tipo:fd.get('tipo'),
+    desc:fd.get('desc').trim(),
+    valor:Math.max(0,Number(fd.get('valor'))||0),
+    data,
+    setor:fd.get('setor').trim()||'Manual',
+    pago:true
+  });
+
+  save();
+  closeModal();
+  render();
+  toast('Lançamento financeiro salvo!');
+  return;
+} 
   
 if(id==='f-login'){
     const username=norm($('#l-user').value);
@@ -1417,11 +2693,72 @@ if(id==='f-login'){
     };
 
     state.view=navFor(state.user)[0];
-    await loadCloudState();
-    render();
-    return;
+
+const cloudLoaded=await loadCloudState();
+
+if(!cloudLoaded){
+  await sb.auth.signOut();
+  state.user=null;
+  $('#l-err').textContent='Não foi possível carregar os dados do sistema. Tente novamente.';
+  return;
 }
 
+render();
+return;
+}
+else if(id==='f-employee-edit'){
+  if(state.user.papel!=='dono'){
+    $('#emp-edit-err').textContent='Apenas o dono pode editar.';
+    return;
+  }
+
+  const idUsuario=f.dataset.u;
+  const nome=$('#emp-edit-nome').value.trim();
+  const usuario=$('#emp-edit-user').value.trim().toLowerCase();
+  const papel=$('#emp-edit-papel').value;
+
+  if(!nome||!usuario)return;
+
+  const {data,error}=await sb
+    .from('profiles')
+    .update({nome,usuario,papel})
+    .eq('id',idUsuario)
+    .select()
+    .single();
+
+  if(error){
+    $('#emp-edit-err').textContent=error.message;
+    return;
+  }
+
+  const {data:profiles,error:loadError}=await sb
+    .from('profiles')
+    .select('id,nome,usuario,papel,ativo')
+    .eq('ativo',true);
+
+  if(loadError){
+    $('#emp-edit-err').textContent='Alterado, mas não foi possível atualizar a equipe.';
+    return;
+  }
+
+  TEAM=(profiles||[]).map(p=>({
+    id:p.id,
+    nome:p.nome,
+    curto:p.nome.split(' ')[0],
+    usuario:p.usuario,
+    papel:p.papel,
+    rotulo:p.papel==='dono'?'Dono':
+      p.papel==='gestor'?'Gestor':
+      p.papel==='estoque'?'Estoque':'Funcionário',
+    faz:[],
+    mkt:false,
+    cor:'var(--silver)'
+  }));
+
+  closeModal();
+  render();
+  toast('Funcionário atualizado!');
+}
 else if(id==='f-employee'){
     const nome=$('#emp-nome').value.trim();
     const email=$('#emp-email').value.trim().toLowerCase();
@@ -1461,11 +2798,34 @@ if(error){
         return;
     }
 
-    closeModal();
-    render();
-    toast('Funcionário cadastrado com sucesso!');
+    const {data:profiles,error:profilesError}=await sb
+  .from('profiles')
+  .select('id,nome,usuario,papel,ativo')
+  .eq('ativo',true);
+
+if(profilesError){
+  erro.textContent='Funcionário cadastrado, mas não foi possível atualizar a equipe.';
+  return;
 }
 
+TEAM=(profiles||[]).map(p=>({
+  id:p.id,
+  nome:p.nome,
+  curto:p.nome.split(' ')[0],
+  usuario:p.usuario,
+  papel:p.papel,
+  rotulo:p.papel==='dono'?'Dono':
+    p.papel==='gestor'?'Gestor':
+    p.papel==='estoque'?'Estoque':'Funcionário',
+  faz:[],
+  mkt:false,
+  cor:'var(--silver)'
+}));
+
+closeModal();
+render();
+toast('Funcionário cadastrado com sucesso!');
+}
   else if(id==='f-os'){
       const stages={};let first=null;
       STAGES.forEach(k=>{if(!$('#o-on-'+k).checked)return;const lines=$('#o-t-'+k).value.split('\n').map(s=>s.trim()).filter(Boolean);
@@ -1479,8 +2839,22 @@ if(error){
         else{c={id:nextCar++,placa:pl,modelo:$('#c-modelo').value.trim(),cor:$('#c-cor').value.trim(),cliente:$('#c-cli').value.trim(),st:'servico',ent:dm(now()),prev:'',entrega:null,hora:'',entOrd:0};CARS.push(c);}}
       c.st='servico';c.entrega=c.entrega===TK()?c.entrega:null;
       const t=now();
-      const os=mkOS(c.id,stages,[]);os.created=new Date(t).toISOString();os.service=$('#o-service').value.trim();os.parts=$('#o-parts').value.trim();os.clientId=+$('#o-client').value||null;DRAFT.photos.forEach(src=>addPhoto(os,'in','Recebimento',src,state.user.id,t));
-      OSL.push(os);if($('#o-meta').checked)os.stages[first].meta=TK();toEnd(os,first);
+      const os=mkOS(c.id,stages,[]);
+      // Salvar as fotos do recebimento na OS
+DRAFT.photos.forEach(src=>{
+  addPhoto(os,'in','Recebimento',src,state.user.id);
+});
+
+DRAFT.photos=[];
+os.created=new Date(t).toISOString();os.service=$('#o-service').value.trim();
+os.parts=$('#o-parts').value.trim();
+os.serviceValue=Math.max(0,Number($('#o-service-value').value)||0);
+os.partsValue=Math.max(0,Number($('#o-parts-value').value)||0);
+os.totalValue=os.serviceValue+os.partsValue;
+os.clientId=+$('#o-client').value||null;
+OSL.push(os);
+sincronizarFinanceiroOS(os);
+if($('#o-meta').checked)
       closeModal();render();toast(`${os.num} criada para ${cn(c)} · está na ${SETORES[first].nome}`);
     }else if(id==='f-car'){
       const c=car(f.dataset.car),pl=$('#e-placa').value.trim().toUpperCase();
@@ -1492,7 +2866,24 @@ if(error){
       if(c.entrega!==TK())c.entOrd=Math.max(0,...entregasHoje().map(x=>x.entOrd))+1;
       c.entrega=TK();c.hora=$('#e-hora').value;render();toast(`${cn(c)} na lista de entregas de hoje`);if(f.dataset.os)osDetail(f.dataset.os);else closeModal();
     }else if(id==='f-qa'){const question=f.elements.question.value.trim();if(question){const qid=Date.now();QUESTIONS.push({id:qid,os:+f.dataset.os,by:state.user.id,byName:state.user.nome||state.user.curto||state.user.usuario,question,ts:now(),answer:'',answerTs:null});NOTIFS.unshift({id:nNot++,ts:now(),kind:'qa',txt:`Nova pergunta de ${state.user.nome||state.user.usuario} na OS ${getOS(+f.dataset.os)?.num||f.dataset.os}: ${question}`,os:+f.dataset.os,lida:false,para:'alex',questionId:qid});save();toast('Pergunta enviada ao Alex. Notificação registrada.');osDetail(+f.dataset.os,true);}
-    }else if(id==='f-editos'){const o=getOS(f.dataset.os);if(o){o.clientId=+$('#eo-client').value||null;o.service=$('#eo-service').value.trim();o.parts=$('#eo-parts').value.trim();closeModal();render();toast('Ordem de serviço atualizada');osDetail(o.id);}
+  }else if(id==='f-editos'){
+  const o=getOS(f.dataset.os);
+
+  if(o){
+    o.clientId=+$('#eo-client').value||null;
+    o.service=$('#eo-service').value.trim();
+    o.parts=$('#eo-parts').value.trim();
+
+    o.serviceValue=Math.max(0,Number($('#eo-service-value').value)||0);
+    o.partsValue=Math.max(0,Number($('#eo-parts-value').value)||0);
+    o.totalValue=o.serviceValue+o.partsValue;
+    sincronizarFinanceiroOS(o);
+    save();
+    closeModal();
+    render();
+    toast('Ordem de serviço atualizada');
+    osDetail(o.id);
+  }
     }else if(id==='f-client'){const v={nome:$('#cl-nome').value.trim(),tipo:$('#cl-tipo').value,doc:$('#cl-doc').value.trim(),contato:$('#cl-contato').value.trim(),email:$('#cl-email').value.trim(),end:$('#cl-end').value.trim()};if(!v.nome)return;if(f.dataset.id){Object.assign(CLIENTS.find(x=>x.id===+f.dataset.id),v);}else{CLIENTS.push({...v,id:Date.now()});}closeModal();render();toast('Cliente salvo');
     }else if(id==='f-post'){ 
       const v={dia:$('#m-dia').value,hora:$('#m-hora').value,formato:$('#m-fmt').value,titulo:$('#m-tit').value.trim(),texto:$('#m-txt').value.trim(),status:$('#m-st').value,car:$('#m-car').value?+$('#m-car').value:''};
@@ -1514,9 +2905,43 @@ if(error){
     }else if(id==='f-todo'){
       const txt=$('#t-txt').value.trim();if(!txt)return;
       TODO.push({id:nTodo++,dia:state.todoDay||TK(),hora:$('#t-hora').value,txt,done:false});render();const i=$('#t-txt');if(i)i.focus();
+    }else if(id==='f-todo-edit'){
+  const task=TODO.find(x=>x.id===+f.dataset.id);
+  if(!task)return;
+
+  const txt=$('#te-txt').value.trim();
+  const dia=$('#te-dia').value;
+
+  if(!txt||!dia)return;
+
+  task.txt=txt;
+  task.dia=dia;
+  task.hora=$('#te-hora').value;
+
+  save();
+  closeModal();
+  render();
+  toast('Tarefa atualizada com sucesso!');
+    
     }else if(id==='f-item'){
       ESTOQUE.push({id:nItem++,cat:$('#i-cat').value,nome:$('#i-nome').value.trim(),un:$('#i-un').value.trim(),qtd:Math.max(0,+$('#i-qtd').value||0),min:Math.max(0,+$('#i-min').value||0)});
       closeModal();render();toast('Item adicionado ao estoque');
+
+}else if(id==='f-item-edit'){
+  const item=ESTOQUE.find(x=>x.id===+f.dataset.id);
+  if(!item)return;
+
+  item.nome=$('#ei-nome').value.trim();
+  item.cat=$('#ei-cat').value;
+  item.un=$('#ei-un').value.trim();
+  item.qtd=Math.max(0,Number($('#ei-qtd').value)||0);
+  item.min=Math.max(0,Number($('#ei-min').value)||0);
+
+  save();
+  closeModal();
+  render();
+  toast('Item atualizado com sucesso!');
+
     }else if(id==='f-pause'){
       const os=getOS(f.dataset.os);pauseStage(os,f.dataset.stage,state.user,$('#p-why').value);toast('Serviço pausado. O Alex foi avisado.');refreshOS(os.id);
     }else if(id==='f-finish'){

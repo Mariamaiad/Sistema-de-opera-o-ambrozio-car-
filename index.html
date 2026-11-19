@@ -2002,13 +2002,11 @@ ${state.user.papel==='dono'&&u.papel!=='dono'?`
 
 <div>
   <div class="subh" style="margin-bottom:6px">
-    Fotos do recebimento · mínimo de 3
-  </div>
-  <p class="note" style="margin:0 0 6px">
-    Adicione pelo menos 3 fotos do veículo no momento do recebimento.
-  </p>
-  ${picker()}
+    Fotos do recebimento · opcional
 </div>
+<p class="note" style="margin:0 0 6px">
+    Você pode adicionar fotos do veículo no recebimento, mas elas não são obrigatórias para criar a OS.
+</p>
 
       <div class="subh">Setores por onde o carro vai passar</div><p class="note">Desmarque o setor que não vai trabalhar neste carro. A OS anda junto com o carro: Funilaria, Preparação, Pintura, Montagem e Polimento.</p>
       ${blocos}
@@ -2831,7 +2829,7 @@ toast('Funcionário cadastrado com sucesso!');
       STAGES.forEach(k=>{if(!$('#o-on-'+k).checked)return;const lines=$('#o-t-'+k).value.split('\n').map(s=>s.trim()).filter(Boolean);
         stages[k]=ST({on:true,emp:$('#o-e-'+k).value||null,tasks:lines.map(txt=>({id:nTask++,txt,done:false}))});if(!first)first=k;});
       if(!first){$('#o-err').textContent='Marque pelo menos um setor.';return;}
-      if(DRAFT.photos.length<3){$('#o-err').textContent='Adicione pelo menos 3 fotos do recebimento.';return;}
+      
       let c;
       if(f.dataset.car)c=car(f.dataset.car);
       else{const pl=$('#c-placa').value.trim().toUpperCase(),ex=pl&&CARS.find(x=>plateN(x.placa)===plateN(pl));

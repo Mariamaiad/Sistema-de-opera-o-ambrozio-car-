@@ -987,9 +987,32 @@ for(const os of OSL){
   const entregasHoje=()=>CARS.filter(c=>c.entrega===TK()).sort((a,b)=>(a.hora||'99')<(b.hora||'99')?-1:(a.hora||'99')>(b.hora||'99')?1:a.entOrd-b.entOrd);
   
   /* notificações: vão para quem está em NOTIF_PARA (hoje, o Alex) */
-  const notify=(kind,txt,os)=>NOTIFS.push({id:nNot++,ts:now(),kind,txt,os,lida:false});
-  const notificacoesDoUsuario=(u=state.user)=>NOTIFS.filter(n=>n.para?n.para===u.id:NOTIF_PARA.includes(u.id));
-  
+  const notify=(kind,txt,os)=>NOTIFS.push({
+  id:nNot++,
+  ts:now(),
+  kind,
+  txt,
+  os,
+  lida:false,
+  para:'alex'
+});
+
+const notificacoesDoUsuario=(u=state.user)=>{
+  if(!u)return [];
+
+  if(u.papel==='dono'){
+    return NOTIFS.filter(n=>
+      !n.para ||
+      n.para==='alex' ||
+      n.para===u.id
+    );
+  }
+
+  return NOTIFS.filter(n=>
+    n.para===u.id ||
+    n.para===u.usuario
+  );
+};
   /* ações da OS (cada uma avisa o Alex) */
   function startStage(os,k,u){const s=os.stages[k],t=now();s.st='andamento';s.meta=TK();s.log.push(L('aberta',t));
     notify('open',`${fn(u.id)} abriu a OS do ${cn(car(os.car))} (${SETORES[k].nome}) às ${hm(t)}.`,os.id);return t}
@@ -1062,7 +1085,7 @@ fotos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="
     const hoje=new Date(now()).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const minhasNotificacoes=notificacoesDoUsuario(u);
 const unread=minhasNotificacoes.filter(n=>!n.lida).length;
-const sino=NOTIF_PARA.includes(u.id)||NOTIFS.some(n=>n.para===u.id);
+const sino=u.papel==='dono'||minhasNotificacoes.length>0;
     const views={agenda:()=>adm?viewAgenda():viewMine(),alex:viewAlex,mkt:viewMkt,os:viewOS,patio:viewPatio,estoque:viewEstoque,fin:viewFin,equipe:viewEquipe,clientes:viewClientes,fotos:viewFotos};
     return `<header class="top">${wordmark()}<span class="date">${hoje}</span>
       ${adm?`<div class="search" role="search">${IC.search}<input id="q" type="search" placeholder="Buscar placa ou carro" autocomplete="off" aria-label="Buscar placa ou carro"><div id="qres" class="qres" hidden></div></div>`:'<span style="margin-right:auto"></span>'}
@@ -3023,9 +3046,35 @@ else if(a==='fotoscar'){
     else if(t.dataset.postcar){const c=t.value?car(t.value):null,os=c?osOf(c.id):null,f=os?os.photos:[];$('#m-fotos').innerHTML=c?`<div class="subh" style="margin-bottom:6px">Fotos deste carro no sistema (${f.length})</div>${f.length?figs(os,f):'<span class="note">Ainda sem fotos.</span>'}`:'';}
     else if(t.dataset.hora){const c=car(t.dataset.hora);c.hora=t.value;render();}
     else if(t.dataset.todo){const x=TODO.find(y=>y.id===+t.dataset.todo);x.done=t.checked;x.doneTs=t.checked?now():null;render();}
-    else if(t.dataset.stagephoto){const os=getOS(t.dataset.stagephoto),k=t.dataset.stage,files=[...t.files];let n=0;
-      for(const f of files){const src=await readImg(f);if(src){addPhoto(os,k,k==='in'?'Recebimento':SETORES[k].nome+' · andamento',src,state.user.id);n++}}
-      t.value='';refreshOS(os.id);toast(n?`${n} ${n===1?'foto adicionada':'fotos adicionadas'}`:'Não foi possível ler a foto');}
+    else if(t.dataset.stagephoto){
+  const os=getOS(t.dataset.stagephoto);
+  const k=t.dataset.stage;
+  const files=[...t.files];
+  let n=0;
+
+  for(const f of files){
+    try{
+      const foto=await enviarFotoNuvem(
+        f,
+        os,
+        k,
+        k==='in'?'Recebimento':SETORES[k].nome+' · andamento',
+        state.user.id
+      );
+
+      os.photos.push(foto);
+      n++;
+
+    }catch(err){
+      console.error('Erro ao enviar foto:',err);
+    }
+  }
+
+  t.value='';
+  save();
+  refreshOS(os.id);
+  toast(n?`${n} ${n===1?'foto enviada':'fotos enviadas'} para a nuvem`:'Não foi possível enviar as fotos');
+}
     else if(t.dataset.draft){const files=[...t.files];for(const f of files){const src=await readImg(f);if(src)DRAFT.photos.push(src);}t.value='';thumbsDraft();}
   });
   document.addEventListener('submit',async e=>{

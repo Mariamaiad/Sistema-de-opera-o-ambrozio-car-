@@ -944,9 +944,109 @@ for(const os of OSL){
     return false;
   }
 }
-  function load(){try{const r=localStorage.getItem(SKEY);if(!r)return false;const d=JSON.parse(r);if(!d||d.v!==2)return false;
-    QUESTIONS=d.QUESTIONS||[];CLIENTS=d.CLIENTS||[];CARS=d.CARS;OSL=d.OSL;NOTIFS=d.NOTIFS||[];ESTOQUE=d.ESTOQUE||ESTOQUE;FIN=d.FIN||FIN;TODO=d.TODO||[];POSTS=d.POSTS||[];IDEIAS=d.IDEIAS||[];QUESTIONS=d.QUESTIONS||[];SENHAS=d.SENHAS||{};({nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo}=d.c);nPost=d.c.nPost||1;nIdeia=d.c.nIdeia||1;return true}catch(e){return false}}
-  
+
+let realtimeChannel=null;
+let realtimeAtualizando=false;
+
+function iniciarRealtime(){
+
+  if(realtimeChannel){
+    sb.removeChannel(realtimeChannel);
+    realtimeChannel=null;
+  }
+
+  if(!state.user)return;
+
+  realtimeChannel=sb
+    .channel('ambrozio-app-realtime')
+    .on(
+      'postgres_changes',
+      {
+        event:'UPDATE',
+        schema:'public',
+        table:'ambrozio_app_state',
+        filter:'id=eq.main'
+      },
+      (payload)=>{
+
+        if(realtimeAtualizando)return;
+
+        const novo=payload.new?.payload;
+        if(!novo)return;
+
+        realtimeAtualizando=true;
+
+        try{
+          NOTIFS=novo.NOTIFS||[];
+          QUESTIONS=novo.QUESTIONS||[];
+
+          const campo=document.activeElement;
+          const digitando=campo && (
+            campo.tagName==='INPUT' ||
+            campo.tagName==='TEXTAREA' ||
+            campo.isContentEditable
+          );
+
+          const modal=$('#md');
+
+          if(!digitando){
+            if(modal && !$('#ov').hidden){
+              const osId=Number(modal.dataset.os);
+              if(osId)osDetail(osId,true);
+            }else{
+              const root=$('#root');
+              if(root && state.user){
+                root.innerHTML=appHtml();
+              }
+            }
+          }
+
+          console.log('Ambrozio: dados recebidos em tempo real.');
+
+        }catch(err){
+          console.error('Erro no recebimento em tempo real:',err);
+        }finally{
+          realtimeAtualizando=false;
+        }
+      }
+    )
+    .subscribe((status)=>{
+      console.log('Ambrozio Realtime:',status);
+    });
+}
+
+function load(){
+  try{
+    const r=localStorage.getItem(SKEY);
+    if(!r)return false;
+
+    const d=JSON.parse(r);
+    if(!d||d.v!==2)return false;
+
+    QUESTIONS=d.QUESTIONS||[];
+    CLIENTS=d.CLIENTS||[];
+    CARS=d.CARS;
+    OSL=d.OSL;
+    NOTIFS=d.NOTIFS||[];
+    ESTOQUE=d.ESTOQUE||ESTOQUE;
+    FIN=d.FIN||FIN;
+    TODO=d.TODO||[];
+    POSTS=d.POSTS||[];
+    IDEIAS=d.IDEIAS||[];
+    SENHAS=d.SENHAS||{};
+
+    ({nextCar,nTask,nOS,nProb,nPh,nNot,nItem,nTodo}=d.c);
+
+    nPost=d.c.nPost||1;
+    nIdeia=d.c.nIdeia||1;
+
+    return true;
+
+  }catch(e){
+    return false;
+  }
+}
+
   const state={user:null,view:'agenda',filtro:'todos',osFiltro:'abertas',finFiltro:'todos',estFiltro:'todos',todoDay:null,mktWeek:null};
   const DRAFT={photos:[]};
   let ASG=null;
@@ -2721,6 +2821,7 @@ function itemEditForm(id){
   }
 
   render();
+  iniciarRealtime();
 });
   const getOS=id=>OSL.find(x=>x.id===+id);
   function swap(os,k,dir){const s=os.stages[k],g=group(k,s.emp),i=g.indexOf(os),j=i+dir;if(i<0||j<0||j>=g.length)return;
@@ -2734,7 +2835,17 @@ function itemEditForm(id){
     const a=t.dataset.act,d=t.dataset;
     if(a==='close2'){$('#ov2').hidden=true;return;}
     if(a==='demo'){const u=emp(d.u);$('#l-user').value=u.usuario;$('#l-pass').value=u.senha;$('#l-err').textContent='';}
-    else if(a==='logout'){await sb.auth.signOut();state.user=null;state.view='todos';closeModal();render();}
+    else if(a==='logout'){
+  if(realtimeChannel){
+    await sb.removeChannel(realtimeChannel);
+    realtimeChannel=null;
+  }
+  await sb.auth.signOut();
+  state.user=null;
+  state.view='todos';
+  closeModal();
+  render();
+}
     else if(a==='nav'){state.view=d.v;closeModal();render();}
     else if(a==='filtro'){state.filtro=d.f;render();}
     else if(a==='osf'){state.osFiltro=d.f;render();}
@@ -3237,6 +3348,7 @@ if(!cloudLoaded){
 }
 
 render();
+iniciarRealtime();
 return;
 }
 else if(id==='f-employee-edit'){

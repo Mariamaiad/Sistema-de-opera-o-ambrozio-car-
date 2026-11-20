@@ -1613,6 +1613,9 @@ function viewPatio(){
               ? `<button class="btn sm red" data-act="carout" data-car="${c.id}">Registrar entrega</button>`
               : ''
             }
+              <button class="btn sm ghost" data-act="cardel" data-car="${c.id}">
+  Excluir
+</button>
           </div>`;
 
       return `
@@ -2718,6 +2721,38 @@ function itemEditForm(id){
     else if(a==='finnew'){finForm(d.tipo);}
     else if(a==='estf'){state.estFiltro=d.f;render();}
     else if(a==='newos'){if(qr)qr.hidden=true;osForm(d.car,d.placa);}
+    else if(a==='cardel'){
+  if(!isAdmin(state.user)){
+    toast('Apenas a administração pode excluir veículos.');
+    return;
+  }
+
+  const carId = +d.car;
+  const veiculo = CARS.find(c => c.id === carId);
+
+  if(!veiculo){
+    toast('Veículo não encontrado.');
+    return;
+  }
+
+  const temOS = OSL.some(os => os.car === carId);
+
+  if(temOS){
+    toast('Este veículo possui OS vinculada. Exclua ou resolva a OS antes.');
+    return;
+  }
+
+  if(!confirm(`Deseja realmente excluir ${cn(veiculo)} do pátio?`)){
+    return;
+  }
+
+  CARS = CARS.filter(c => c.id !== carId);
+
+  save();
+  render();
+
+  toast('Veículo excluído com sucesso!');
+}
     
 else if(a==='importcars'){
   importCarsModal();

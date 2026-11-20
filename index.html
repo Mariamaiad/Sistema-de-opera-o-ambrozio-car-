@@ -1,4 +1,6 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  </head><body>
   <title>Ambrozio Car</title>
   <meta name="claude:viewport-fit-sides" content="cover">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -671,6 +673,7 @@ const navFor=u=>{
   /* ---------- dados ---------- */
   let CARS=[],OSL=[],NOTIFS=[],TODO=[],POSTS=[],IDEIAS=[],CLIENTS=[],QUESTIONS=[];
 let TEAM=[];
+let IMPORT_CARS_DRAFT = [];
 let nPost=1,nIdeia=1;
 let SENHAS={};
   const senhaDe=u=>SENHAS[u.id]||u.senha;
@@ -985,6 +988,7 @@ for(const os of OSL){
   
   /* notificações: vão para quem está em NOTIF_PARA (hoje, o Alex) */
   const notify=(kind,txt,os)=>NOTIFS.push({id:nNot++,ts:now(),kind,txt,os,lida:false});
+  const notificacoesDoUsuario=(u=state.user)=>NOTIFS.filter(n=>n.para?n.para===u.id:NOTIF_PARA.includes(u.id));
   
   /* ações da OS (cada uma avisa o Alex) */
   function startStage(os,k,u){const s=os.stages[k],t=now();s.st='andamento';s.meta=TK();s.log.push(L('aberta',t));
@@ -1056,7 +1060,9 @@ fotos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="
   function appHtml(){
     const u=state.user,adm=isAdmin(u),L2=NAVL(adm);
     const hoje=new Date(now()).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    const unread=NOTIFS.filter(n=>!n.lida).length,sino=NOTIF_PARA.includes(u.id);
+    const minhasNotificacoes=notificacoesDoUsuario(u);
+const unread=minhasNotificacoes.filter(n=>!n.lida).length;
+const sino=NOTIF_PARA.includes(u.id)||NOTIFS.some(n=>n.para===u.id);
     const views={agenda:()=>adm?viewAgenda():viewMine(),alex:viewAlex,mkt:viewMkt,os:viewOS,patio:viewPatio,estoque:viewEstoque,fin:viewFin,equipe:viewEquipe,clientes:viewClientes,fotos:viewFotos};
     return `<header class="top">${wordmark()}<span class="date">${hoje}</span>
       ${adm?`<div class="search" role="search">${IC.search}<input id="q" type="search" placeholder="Buscar placa ou carro" autocomplete="off" aria-label="Buscar placa ou carro"><div id="qres" class="qres" hidden></div></div>`:'<span style="margin-right:auto"></span>'}
@@ -1123,9 +1129,10 @@ fotos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="
       ${adm?'<div style="margin-top:8px"><button class="btn sm" data-act="entrega">+ Marcar entrega para hoje</button></div>':''}`;}
   
   function viewAgenda(){
-    const sino=NOTIF_PARA.includes(state.user.id);
-    const novos=sino?NOTIFS.filter(n=>!n.lida).sort((a,b)=>b.ts-a.ts).slice(0,3):[];
-    const total=NOTIFS.filter(n=>!n.lida).length;
+    const minhasNotificacoes=notificacoesDoUsuario();
+const sino=NOTIF_PARA.includes(state.user.id)||minhasNotificacoes.length>0;
+const novos=minhasNotificacoes.filter(n=>!n.lida).sort((a,b)=>b.ts-a.ts).slice(0,3);
+const total=minhasNotificacoes.filter(n=>!n.lida).length;
     const fora=OSL.filter(os=>{const k=curStage(os);return k&&os.stages[k].meta!==TK()}).length;
     const myTodo=state.user.id==='alex'?TODO.filter(t=>t.dia<=TK()&&!t.done).length:0;
     let h=`<div class="pagehead"><div><h1>Agenda da oficina</h1><p>Use ▲▼ para escolher a ordem de cada fila. A OS vai junto quando o carro muda de setor.</p></div><button class="btn red" data-act="newos">+ Registrar entrada</button></div>
@@ -1566,23 +1573,129 @@ function fotosCarDetail(carId){
   $('#eo-service-value').addEventListener('input',atualizarTotal);
   $('#eo-parts-value').addEventListener('input',atualizarTotal);
 }
-  /* ---------- pátio ---------- */
-  function viewPatio(){
-    const dentro=CARS.filter(c=>c.st!=='entregue');
-    const ordem={pronto:0,servico:1,aguardando:2,entregue:3};
-    const rows=[...CARS].sort((a,b)=>ordem[a.st]-ordem[b.st]||(STAGES.indexOf(curOfCar(b))-STAGES.indexOf(curOfCar(a)))).map(c=>{const os=osOf(c.id);
-      const cur=os&&curStage(os);
-      const etapa=!os?'Sem OS':cur?`<strong style="color:${SETORES[cur].cor}">${SETORES[cur].nome}</strong><small>${os.stages[cur].emp?esc(fn(os.stages[cur].emp)):'Qualquer do setor'}${inBoard(os,cur)&&posOf(os,cur)?' · '+posOf(os,cur)+'º na fila':''}</small>`:'Concluída';
-      const acao=c.st==='entregue'?`<small>Saiu em ${esc(c.saida||'—')}</small>`
-        :`<div class="btns">${os?`<button class="btn sm" data-act="os" data-os="${os.id}">Ver OS</button>`:`<button class="btn sm red" data-act="newos" data-car="${c.id}">Criar OS</button>`}${c.st==='pronto'?`<button class="btn sm red" data-act="carout" data-car="${c.id}">Registrar entrega</button>`:''}</div>`;
-      return `<tr><td><strong>${esc(cn(c))}</strong>${c.cliente?`<small>${esc(c.cliente)}</small>`:''}</td><td>${plateH(c)}</td><td>${etapa}</td><td class="num">${c.entrega===TK()?'Hoje'+(c.hora?' '+esc(c.hora):''):esc(c.prev||'—')}</td><td><span class="pill p-${c.st}">${ST_CAR[c.st]}</span></td><td class="r">${acao}</td></tr>`}).join('');
-    const semPlaca=dentro.filter(c=>!c.placa).length;
-    return `<div class="pagehead"><div><h1>Pátio</h1><p>Onde cada carro está agora</p></div><button class="btn red" data-act="newos">+ Registrar entrada</button></div>
-      <div class="stats">${stat('No pátio agora',dentro.length,'veículos')}${stat('Prontos p/ retirada',CARS.filter(c=>c.st==='pronto').length,'')}
-        ${stat('Entregas hoje',entregasHoje().filter(c=>c.st==='entregue').length+' / '+entregasHoje().length,'')}${stat('Sem placa',semPlaca,semPlaca?'cadastre pela OS':'tudo cadastrado',semPlaca?'alert':'')}</div>
-      <div class="tablewrap"><table><thead><tr><th>Veículo</th><th>Placa</th><th>Setor atual</th><th>Entrega</th><th>Situação</th><th class="r">Ação</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  }
-  const curOfCar=c=>{const os=osOf(c.id);return os?curStage(os):null};
+
+/* ---------- pátio ---------- */
+
+function viewPatio(){
+  const dentro = CARS.filter(c => c.st !== 'entregue');
+
+  const ordem = {
+    pronto: 0,
+    servico: 1,
+    aguardando: 2,
+    entregue: 3
+  };
+
+  const rows = [...CARS]
+    .sort((a,b) =>
+      ordem[a.st] - ordem[b.st] ||
+      (STAGES.indexOf(curOfCar(b)) - STAGES.indexOf(curOfCar(a)))
+    )
+    .map(c => {
+      const os = osOf(c.id);
+      const cur = os && curStage(os);
+
+      const etapa = !os
+        ? 'Sem OS'
+        : cur
+          ? `<strong style="color:${SETORES[cur].cor}">${SETORES[cur].nome}</strong>
+             <small>${os.stages[cur].emp ? esc(fn(os.stages[cur].emp)) : 'Qualquer do setor'}${inBoard(os,cur) && posOf(os,cur) ? ' · ' + posOf(os,cur) + 'º na fila' : ''}</small>`
+          : 'Concluída';
+
+      const acao = c.st === 'entregue'
+        ? `<small>Saiu em ${esc(c.saida || '—')}</small>`
+        : `<div class="btns">
+            ${os
+              ? `<button class="btn sm" data-act="os" data-os="${os.id}">Ver OS</button>`
+              : `<button class="btn sm red" data-act="newos" data-car="${c.id}">Criar OS</button>`
+            }
+            ${c.st === 'pronto'
+              ? `<button class="btn sm red" data-act="carout" data-car="${c.id}">Registrar entrega</button>`
+              : ''
+            }
+          </div>`;
+
+      return `
+        <tr>
+          <td>
+            <strong>${esc(cn(c))}</strong>
+            ${c.cliente ? `<small>${esc(c.cliente)}</small>` : ''}
+          </td>
+          <td>${plateH(c)}</td>
+          <td>${etapa}</td>
+          <td class="num">
+            ${c.entrega === TK()
+              ? 'Hoje' + (c.hora ? ' ' + esc(c.hora) : '')
+              : esc(c.prev || '—')
+            }
+          </td>
+          <td>
+            <span class="pill p-${c.st}">${ST_CAR[c.st]}</span>
+          </td>
+          <td class="r">${acao}</td>
+        </tr>
+      `;
+    }).join('');
+
+  const semPlaca = dentro.filter(c => !c.placa).length;
+
+  return `
+    <div class="pagehead">
+      <div>
+        <h1>Pátio</h1>
+        <p>Onde cada carro está agora</p>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" data-act="importcars">
+          <span>↑</span> Importar em massa
+        </button>
+
+        <button class="btn red" data-act="newos">
+          + Registrar entrada
+        </button>
+      </div>
+    </div>
+
+    ${semPlaca ? `
+      <div class="notice">
+        ${semPlaca} veículo(s) sem placa cadastrada.
+      </div>
+    ` : ''}
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Veículo / Cliente</th>
+            <th>Placa</th>
+            <th>Etapa atual</th>
+            <th>Previsão</th>
+            <th>Situação</th>
+            <th class="r">Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rows || `
+            <tr>
+              <td colspan="6" class="empty">
+                Nenhum veículo cadastrado no pátio.
+              </td>
+            </tr>
+          `}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+const curOfCar = c => {
+  const os = osOf(c.id);
+  return os ? curStage(os) : null;
+};
+
+ 
   
   /* ---------- estoque e EPI ---------- */
   const nivel=i=>i.qtd<=i.min*0.5?'crit':i.qtd<i.min?'warn':'ok';
@@ -1960,7 +2073,284 @@ ${state.user.papel==='dono'&&u.papel!=='dono'?`
   function readImg(file){return new Promise(res=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const m=1280,s=Math.min(1,m/Math.max(im.width,im.height));const cv=document.createElement('canvas');cv.width=Math.round(im.width*s);cv.height=Math.round(im.height*s);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);res(cv.toDataURL('image/jpeg',0.72))};im.onerror=()=>res(null);im.src=fr.result};fr.onerror=()=>res(null);fr.readAsDataURL(file)})}
   
   function foundHtml(q){const p=plateN(q);if(p.length<5)return '';const c=CARS.find(x=>plateN(x.placa)===p);if(!c)return '';const os=osOf(c.id);
-    return `<div class="banner"><div><strong>Este carro já está no sistema:</strong> ${esc(cn(c))} ${plateH(c)}<br><span class="note">${esc(carSummary(c))}</span></div>${os&&!isDone(os)?`<button type="button" class="btn sm red" data-act="os" data-os="${os.id}">Abrir a OS</button>`:''}</div>`}
+  return `<div class="banner"><div><strong>Este carro já está no sistema:</strong> ${esc(cn(c))} ${plateH(c)}<br><span class="note">${esc(carSummary(c))}</span></div>${os&&!isDone(os)?`<button type="button" class="btn sm red" data-act="os" data-os="${os.id}">Abrir a OS</button>`:''}</div>`}
+
+function importCarsModal(){
+  openModal(`
+    <h2>Importar veículos em massa</h2>
+    <p class="note">Adicione os veículos por planilha ou cole uma lista de texto.</p>
+
+    <div class="card" style="margin-bottom:12px">
+      <h3>Opção 1 — Planilha Excel</h3>
+      <label>
+        Selecionar arquivo .xlsx
+        <input id="import-excel" type="file" accept=".xlsx,.xls">
+      </label>
+    </div>
+
+    <div class="card" style="margin-bottom:12px">
+      <h3>Opção 2 — Colar lista</h3>
+      <label>
+        Cole aqui os veículos
+        <textarea id="import-text" rows="9"
+          placeholder="Modelo | Cliente | Placa | Previsão&#10;Audi Q3 | Protefort | AWA3D37 | ?"></textarea>
+      </label>
+    </div>
+
+    <p class="err" id="import-error" role="alert"></p>
+
+    <div class="actions">
+      <button type="button" class="btn" data-act="close">Cancelar</button>
+      <button type="button" class="btn red" data-act="import-preview">
+        Ler veículos
+      </button>
+    </div>
+  `,true);
+}
+
+function lerPlanilhaVeiculos(rows) {
+  const normalizar = v => String(v ?? '').trim();
+  const limpar = s => norm(s).replace(/[^a-z0-9]/g, '');
+
+  const dados = rows
+    .map(row => row.map(normalizar))
+    .filter(row => row.some(v => v !== ''));
+
+  if (!dados.length) {
+    throw new Error('A planilha está vazia.');
+  }
+
+  const colunas = {
+    modelo: 0,
+    cliente: 1,
+    placa: 2,
+    prev: 3
+  };
+
+  const aliases = {
+    modelo: ['modelo', 'veiculo', 'carro'],
+    cliente: ['cliente', 'seguradora', 'proprietario'],
+    placa: ['placa', 'matricula'],
+    prev: ['previsao', 'entrega', 'dataprevista']
+  };
+
+  let inicio = 0;
+
+  for (let i = 0; i < Math.min(dados.length, 8); i++) {
+    const cabecalho = dados[i].map(limpar);
+
+    const achouModelo = cabecalho.some(v =>
+      aliases.modelo.includes(v)
+    );
+
+    if (achouModelo) {
+      Object.keys(aliases).forEach(key => {
+        const pos = cabecalho.findIndex(v =>
+          aliases[key].includes(v)
+        );
+        if (pos >= 0) colunas[key] = pos;
+      });
+
+      inicio = i + 1;
+      break;
+    }
+  }
+
+  return dados.slice(inicio).map(row => ({
+    modelo: normalizar(row[colunas.modelo]),
+    cliente: normalizar(row[colunas.cliente]),
+    placa: plateN(normalizar(row[colunas.placa])),
+    prev: typeof row[colunas.prev] === 'number' && window.XLSX
+  ? XLSX.SSF.format('dd/mm/yyyy', row[colunas.prev])
+  : normalizar(row[colunas.prev])
+  })).filter(v => v.modelo);
+}
+
+
+function converterDataImportacao(valor) {
+  if (typeof valor === 'number' && window.XLSX) {
+    return XLSX.SSF.format('dd/mm/yyyy', valor);
+  }
+  return String(valor ?? '').trim();
+}
+
+
+async function lerArquivoVeiculos() {
+  const arquivo = $('#import-excel')?.files?.[0];
+  const texto = $('#import-text')?.value?.trim();
+
+  let linhas = [];
+
+  if (arquivo) {
+    if (!window.XLSX || !XLSX.read) {
+      throw new Error('Biblioteca Excel não carregada.');
+    }
+
+    const buffer = await arquivo.arrayBuffer();
+
+    const planilha = XLSX.read(buffer, {
+      type: 'array'
+    });
+
+    const primeiraAba = planilha.SheetNames[0];
+
+    if (!primeiraAba) {
+      throw new Error('Nenhuma aba encontrada no Excel.');
+    }
+
+    linhas = XLSX.utils.sheet_to_json(
+      planilha.Sheets[primeiraAba],
+      {
+        header: 1,
+        defval: '',
+        raw: true
+      }
+    );
+
+  } else if (texto) {
+    linhas = texto.split(/\r?\n/).map(linha =>
+      linha.split(/[|;\t]/)
+    );
+
+  } else {
+    throw new Error('Selecione um Excel ou cole uma lista.');
+  }
+
+  const veiculos = lerPlanilhaVeiculos(linhas).map(v => ({
+    ...v,
+    prev: converterDataImportacao(v.prev)
+  }));
+
+  if (!veiculos.length) {
+    throw new Error('Nenhum veículo encontrado na planilha.');
+  }
+
+  return veiculos;
+}
+
+
+function mostrarPreviaVeiculos(veiculos) {
+  IMPORT_CARS_DRAFT = veiculos;
+
+  const placasExistentes = new Set(
+    CARS.map(c => plateN(c.placa)).filter(Boolean)
+  );
+
+  const placasLidas = new Set();
+
+  const duplicados = veiculos.map(v => {
+    const placa = plateN(v.placa);
+
+    if (!placa) return false;
+
+    if (placasExistentes.has(placa) || placasLidas.has(placa)) {
+      return true;
+    }
+
+    placasLidas.add(placa);
+    return false;
+  });
+
+  const novos = duplicados.filter(v => !v).length;
+
+  openModal(`
+    <h2>Conferir veículos</h2>
+
+    <p class="note">
+      ${veiculos.length} veículos encontrados.
+      ${novos} disponíveis para importação.
+    </p>
+
+    <div class="tablewrap" style="max-height:45vh;overflow:auto">
+      <table style="min-width:600px">
+        <thead>
+          <tr>
+            <th>Modelo</th>
+            <th>Cliente</th>
+            <th>Placa</th>
+            <th>Previsão</th>
+            <th>Situação</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${veiculos.map((v, i) => `
+            <tr>
+              <td>${esc(v.modelo)}</td>
+              <td>${esc(v.cliente || '—')}</td>
+              <td>${esc(v.placa || '—')}</td>
+              <td>${esc(v.prev || '—')}</td>
+              <td>
+                ${duplicados[i]
+                  ? '<span class="pill warn">Duplicado</span>'
+                  : '<span class="pill ok">Novo</span>'}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">
+      Os veículos serão cadastrados como aguardando,
+      sem criação automática de ordens de serviço.
+    </p>
+
+    <div class="actions">
+      <button class="btn" data-act="import-back">
+        Voltar
+      </button>
+
+      <button class="btn red" data-act="import-confirm"
+        ${novos ? '' : 'disabled'}>
+        Confirmar importação (${novos})
+      </button>
+    </div>
+  `, true);
+}
+
+
+function confirmarImportacaoVeiculos() {
+  const existentes = new Set(
+    CARS.map(c => plateN(c.placa)).filter(Boolean)
+  );
+
+  let adicionados = 0;
+
+  IMPORT_CARS_DRAFT.forEach(v => {
+    const placa = plateN(v.placa);
+
+    if (placa && existentes.has(placa)) return;
+
+    if (placa) existentes.add(placa);
+
+    CARS.push({
+      id: nextCar++,
+      modelo: v.modelo,
+      placa: placa,
+      cliente: v.cliente,
+      cor: '',
+      st: 'aguardando',
+      ent: '',
+      prev: v.prev,
+      entrega: null,
+      hora: '',
+      entOrd: 0
+    });
+
+    adicionados++;
+  });
+
+  IMPORT_CARS_DRAFT = [];
+
+  save();
+  closeModal();
+  render();
+
+  toast(adicionados + ' veículos importados com sucesso!');
+}
+
+
   function osForm(carId,placa){
     DRAFT.photos=[];const c=carId?car(carId):null;
     const dados=c?`<div class="banner"><div><strong>${esc(cn(c))}</strong> ${plateH(c)}<br><span class="note">${esc(c.cliente||'')}</span></div></div>`
@@ -2241,11 +2631,10 @@ function itemEditForm(id){
       <div class="actions"><button type="button" class="btn" data-act="backos" data-os="${osId}">Voltar</button><button class="btn red" type="submit">Enviar aviso</button></div></form>`);
   }
   function notifsModal(){
-    const l=[...NOTIFS].sort((a,b)=>b.ts-a.ts);
-    openModal(`<h2>Notificações</h2><div class="notifs">${l.length?l.map(n=>`<button class="notif ${n.lida?'':'new'}" data-act="os" data-os="${n.os}" data-n="${n.id}"><i class="k-${n.kind}"></i><span>${esc(n.txt)}</span><small>${dthm(n.ts)}</small></button>`).join(''):'<div class="empty">Nenhuma notificação ainda.</div>'}</div>
-      <div class="actions"><button class="btn" data-act="readall">Marcar todas como lidas</button><button class="btn red" data-act="close">Fechar</button></div>`);
-  }
-  
+  const l=[...notificacoesDoUsuario()].sort((a,b)=>b.ts-a.ts);
+  openModal(`<h2>Notificações</h2><div class="notifs">${l.length?l.map(n=>`<button class="notif ${n.lida?'':'new'}" data-act="os" data-os="${n.os}" data-n="${n.id}"><i class="k-${n.kind}"></i><span>${esc(n.txt)}</span><small>${dthm(n.ts)}</small></button>`).join(''):'<div class="empty">Nenhuma notificação ainda.</div>'}</div>
+    <div class="actions"><button class="btn" data-act="readall">Marcar todas como lidas</button><button class="btn red" data-act="close">Fechar</button></div>`);
+}
   function openOS(id){const os=OSL.find(x=>x.id===+id),u=state.user;if(!os)return;
     if(!isAdmin(u)){const k=myStages(os,u).find(x=>os.stages[x].st==='fila'&&!prevPending(os,x));
       if(k){const t=startStage(os,k,u);toast(`OS aberta às ${hm(t)}. O Alex foi avisado.`);render();}}
@@ -2329,7 +2718,42 @@ function itemEditForm(id){
     else if(a==='finnew'){finForm(d.tipo);}
     else if(a==='estf'){state.estFiltro=d.f;render();}
     else if(a==='newos'){if(qr)qr.hidden=true;osForm(d.car,d.placa);}
-    else if(a==='companyreport'){companyMonthlyPDF();}
+    
+else if(a==='importcars'){
+  importCarsModal();
+}
+
+else if(a==='import-preview'){
+  const erro = $('#import-error');
+
+  if (erro) erro.textContent = '';
+
+  try {
+    const veiculos = await lerArquivoVeiculos();
+    mostrarPreviaVeiculos(veiculos);
+  } catch (e) {
+    console.error('Erro na importação:', e);
+
+    if (erro) {
+      erro.textContent = e.message || 'Erro ao ler veículos.';
+    } else {
+      toast(e.message || 'Erro ao ler veículos.');
+    }
+  }
+}
+
+else if(a==='import-back'){
+  importCarsModal();
+}
+
+else if(a==='import-confirm'){
+  confirmarImportacaoVeiculos();
+}
+
+else if(a==='companyreport'){
+  companyMonthlyPDF();
+}
+
     else if(a==='editos'){if(!isAdmin(state.user)){toast('Apenas a administração pode editar a OS.');return;}editOSForm(d.os);}
     else if(a==='deleteos'){
   if(!isAdmin(state.user)){
@@ -2362,7 +2786,30 @@ save();
   toast('OS excluída. O cadastro do veículo foi preservado.');
 }
     else if(a==='clientnew'){clientForm();}
-    else if(a==='qa-reply'){const q=QUESTIONS.find(x=>x.id===+d.q);if(q){const ans=prompt('Resposta para '+q.byName+' (OS '+getOS(q.os)?.num+'):',q.answer||'');if(ans&&ans.trim()){q.answer=ans.trim();q.answerTs=now();save();osDetail(q.os,true);toast('Resposta enviada ao funcionário');}}}
+    else if(a==='qa-reply'){
+  const q=QUESTIONS.find(x=>x.id===+d.q);
+  if(q){
+    const ans=prompt('Resposta para '+q.byName+' (OS '+getOS(q.os)?.num+'):',q.answer||'');
+    if(ans&&ans.trim()){
+      q.answer=ans.trim();
+      q.answerTs=now();
+
+      NOTIFS.unshift({
+        id:nNot++,
+        ts:now(),
+        kind:'qa',
+        txt:`Alex respondeu sua pergunta na OS ${getOS(q.os)?.num||q.os}: ${q.answer}`,
+        os:+q.os,
+        lida:false,
+        para:q.by
+      });
+
+      save();
+      osDetail(q.os,true);
+      toast('Resposta enviada e notificação registrada!');
+    }
+  }
+}
     else if(a==='clientedit'){clientForm(d.id);}
     else if(a==='clientdel'){if(t.dataset.ok){CLIENTS=CLIENTS.filter(c=>c.id!==+d.id);render();toast('Cliente excluído');}else{t.dataset.ok='1';t.textContent='Confirmar';}}
     else if(a==='newitem'){itemForm();}
@@ -2467,7 +2914,11 @@ else if(a==='fotoscar'){
     else if(a==='photo'){const os=getOS(d.os),p=os.photos.find(x=>x.id===+d.ph);$('#lbimg').src=p.src;$('#lbimg').alt=p.leg;$('#lbcap').textContent=p.leg+' · '+fn(p.by)+' · '+dthm(p.ts);$('#ov2').hidden=false;}
     else if(a==='rmdraft'){DRAFT.photos.splice(+d.i,1);thumbsDraft();}
     else if(a==='notifs'){notifsModal();}
-    else if(a==='readall'){NOTIFS.forEach(n=>n.lida=true);render();notifsModal();}
+    else if(a==='readall'){
+  notificacoesDoUsuario().forEach(n=>n.lida=true);
+  render();
+  notifsModal();
+}
     else if(a==='carout'){const c=car(d.car);c.st='entregue';c.saida=dm(now());c.saidaTs=now();if(!c.entrega)c.entrega=TK();render();toast(`${cn(c)} entregue às ${hm(now())}`);if(d.os)osDetail(d.os,true);}
     else if(a==='est'){const i=ESTOQUE.find(x=>x.id===+d.id);i.qtd=Math.max(0,i.qtd+(+d.d));render();}
     else if(a==='receber'){FIN.find(x=>x.id===+d.id).pago=true;render();toast('Pagamento registrado');}
